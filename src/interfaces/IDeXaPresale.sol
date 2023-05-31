@@ -49,6 +49,7 @@ interface IDeXaPresale {
         uint256 claimedTokenAmountForNtr;
         uint256 totalClaimableTokenAmountForBusd;
         uint256 totalClaimableTokenAmountForNtr;
+        uint256 lastClaimedTimeForBusd;
     }
 
     struct RoundInfo {
@@ -69,12 +70,17 @@ interface IDeXaPresale {
         mapping(address => ContributionInfo) contributions;
     }
 
-    function claimPrebookTokens() external;
+    // function claimPrebookTokens() external;
 
-    function allowanceToUser(address _user, uint256 _amount) external;
+    function allowanceToUser(
+        address _user,
+        uint256 _busdAmount,
+        uint256 _round
+    ) external;
 
     function batchAllowanceToUsers(
         address[] calldata _user,
-        uint256[] calldata _amount
+        uint256[] calldata _amount,
+        uint256[] memory _rounds
     ) external;
 }
