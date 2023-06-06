@@ -6,11 +6,11 @@ interface IDeXaPresale {
     error InvalidInputValue();
     error InvalidInputLength();
 
-    event TokenPurchaseWithNTR(
+    event TokenPurchaseWithToken(
         address indexed beneficiary,
         uint8 round,
-        uint256 ntrAmount,
-        uint256 ntrAmountForOwner
+        uint256 tokenAmount,
+        uint256 tokenAmountForOwner
     );
     event TokenPurchaseWithBUSD(
         address indexed beneficiary,
@@ -24,7 +24,7 @@ interface IDeXaPresale {
         uint256 tokenAmount
     );
     event RefRewardClaimBUSD(address indexed referrer, uint256 amount);
-    event RefRewardClaimNTR(address indexed referrer, uint256 amount);
+    event RefRewardClaimToken(address indexed referrer, uint256 amount);
     event SetRefRewardBUSD(
         address indexed referrer,
         address indexed user,
@@ -32,7 +32,7 @@ interface IDeXaPresale {
         uint8 round,
         uint256 amount
     );
-    event SetRefRewardNTR(
+    event SetRefRewardToken(
         address indexed referrer,
         address indexed user,
         uint8 level,
@@ -42,35 +42,33 @@ interface IDeXaPresale {
 
     struct ContributionInfo {
         uint256 contributedBusdAmount;
-        uint256 contributedNtrAmount;
+        uint256 contributedTokenAmount;
         uint256 purchaseTimeForBusd;
-        uint256 purchaseTimeForNtr;
+        uint256 purchaseTimeForToken;
         uint256 claimedTokenAmountForBusd;
-        uint256 claimedTokenAmountForNtr;
+        uint256 claimedTokenAmountForToken;
         uint256 totalClaimableTokenAmountForBusd;
-        uint256 totalClaimableTokenAmountForNtr;
+        uint256 totalClaimableTokenAmountForToken;
         uint256 lastClaimedTimeForBusd;
     }
 
     struct RoundInfo {
         uint256 priceForBusd;
-        uint256 priceForNtr;
+        uint256 priceForToken;
         uint256 startTime;
         uint256 endTime;
         uint8 lockMonths;
         uint256 maxDexaAmountToSell;
         bool busdEnabled;
-        bool ntrEnabled;
+        bool tokenEnabled;
         uint256 busdRaised;
-        uint256 ntrRaised;
+        uint256 tokenRaised;
         uint256 minContributionForBusd;
-        uint256 minContributionForNtr;
+        uint256 minContributionForToken;
         uint256 maxContributionForBusd;
-        uint256 maxContributionForNtr;
+        uint256 maxContributionForToken;
         mapping(address => ContributionInfo) contributions;
     }
-
-    // function claimPrebookTokens() external;
 
     function allowanceToUser(
         address _user,
