@@ -264,9 +264,9 @@ contract TokenTest is Test {
             800000000000000000,
             block.timestamp,
             block.timestamp + 30 days,
-            1,
+            4,
             50000000e18,
-            5e18,
+            150e18,
             1000e18
         );
 
@@ -275,8 +275,8 @@ contract TokenTest is Test {
         _users[1] = address(user2);
 
         uint256[] memory _allowances = new uint256[](2);
-        _allowances[0] = uint256(100e18);
-        _allowances[1] = uint256(10e18);
+        _allowances[0] = uint256(150e18);
+        _allowances[1] = uint256(150e18);
 
         uint256[] memory _rounds = new uint256[](2);
         _rounds[0] = 0;
@@ -284,20 +284,17 @@ contract TokenTest is Test {
 
         deXaPresale.batchAllowanceToUsers(_users, _allowances, _rounds);
 
-        // uint256 _amount0 = deXaPresale.claimableTokens(_users[0]);
-        // uint256 _amount1 = deXaPresale.claimableTokens(_users[1]);
         vm.stopPrank();
 
         vm.startPrank(user1);
-        // deXaPresale.claimPrebookTokens();
 
         vm.warp(block.timestamp + 30 days * 12);
         deXaPresale.claimTokensFromBusd(0);
 
-        // assertEq(
-        //     deXa.balanceOf(user1),
-        //     100e18,
-        //     "Not received claimable amount"
-        // );
+        assertEq(
+            deXa.balanceOf(user1),
+            187500000000000000000,
+            "Not received claimable amount"
+        );
     }
 }
