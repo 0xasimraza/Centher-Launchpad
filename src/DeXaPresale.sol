@@ -22,6 +22,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     address public busd;
     address public register;
 
+    uint256 public busdBalanceForReward;
     uint256 private constant MONTH = 86400 * 30;
     // uint256 private constant MONTH = 60 * 5; // for test
 
@@ -422,8 +423,14 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
                 break;
             }
             uint256 bonus = (_busdAmount * referralRate[i]) / MULTIPLER;
+            require(
+                bonus <= busdBalanceForReward,
+                "Not enough funds for reward"
+            );
+
             refRewardByBUSD[referrers[i]] += bonus;
             busdForOwner -= bonus;
+            busdBalanceForReward -= bonus;
             IERC20(busd).transfer(referrers[i], bonus);
             emit SetRefRewardBUSD(
                 referrers[i],
@@ -511,9 +518,14 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
                     break;
                 }
                 uint256 bonus = (_busdAmounts[i] * referralRate[i]) / MULTIPLER;
+                require(
+                    bonus <= busdBalanceForReward,
+                    "Not enough funds for reward"
+                );
 
                 refRewardByBUSD[referrers[i]] += bonus;
                 busdForOwner -= bonus;
+                busdBalanceForReward -= bonus;
 
                 IERC20(busd).transfer(referrers[i], bonus);
                 emit SetRefRewardBUSD(
@@ -741,7 +753,14 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     }
 
     function depositBusdForReward(uint256 _busdAmount) external onlyOwner {
+        busdBalanceForReward += _busdAmount;
         IERC20(busd).transferFrom(msg.sender, address(this), _busdAmount);
+    }
+
+    function withdrawBusdForReward(address _receiver) external onlyOwner {
+        uint256 balance = busdBalanceForReward;
+        busdBalanceForReward = 0;
+        IERC20(busd).transfer(_receiver, balance);
     }
 
     function _hasEnded() internal view returns (bool) {
