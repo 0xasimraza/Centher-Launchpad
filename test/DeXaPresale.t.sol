@@ -29,6 +29,11 @@ contract TokenTest is Test {
         user2 = payable(vm.addr(3));
         other = payable(vm.addr(4));
 
+        console2.log(" ---- owner ----", owner);
+        console2.log(" ---- user1 ----", user1);
+        console2.log(" ---- user2 ----", user2);
+        console2.log(" ---- other ----", other);
+
         vm.startPrank(owner);
         deXa = new Token("deXa", "DXC");
         busd = new Token("Binance USD", "BUSD");
@@ -50,8 +55,8 @@ contract TokenTest is Test {
 
         address[] memory _refs = new address[](3);
         _refs[0] = address(owner);
-        _refs[1] = address(owner);
-        _refs[2] = address(owner);
+        _refs[1] = address(user1);
+        _refs[2] = address(user2);
 
         register.registerForOwnerBatch(_users, _refs);
 
@@ -385,6 +390,154 @@ contract TokenTest is Test {
             balanceAfter2ndClaim,
             180577849117174959871589,
             "Amount not received as expected"
+        );
+    }
+
+    function testRewardAmountForReferral() public {
+        //clear balances
+        changePrank(user1);
+        busd.transfer(address(1), 500000 ether);
+        changePrank(user2);
+        busd.transfer(address(1), 500000 ether);
+
+        changePrank(owner);
+
+        busd.approve(address(deXaPresale), 10000e18);
+        deXaPresale.depositBusdForReward(10000e18);
+
+        uint256 ownerDexaBalanceDump = deXa.balanceOf(owner);
+        deXa.transfer(address(1), ownerDexaBalanceDump);
+
+        uint256 ownerBusdBalanceDump = busd.balanceOf(owner);
+        busd.transfer(address(1), ownerBusdBalanceDump);
+
+        uint16[] memory _rates = new uint16[](6);
+        _rates[0] = (600);
+        _rates[1] = (400);
+        _rates[2] = (200);
+        _rates[3] = (200);
+        _rates[4] = (200);
+        _rates[5] = (200);
+        deXaPresale.setReferralRate(_rates);
+        deal({
+            token: address(deXa),
+            to: address(deXaPresale),
+            give: 50000000e18
+        });
+
+        deXaPresale.setRoundInfoForBusd(
+            0,
+            800000000000000000,
+            block.timestamp,
+            block.timestamp + 30 days,
+            4,
+            50000000e18,
+            150e18,
+            1000e18
+        );
+
+        address[] memory _users = new address[](2);
+        _users[0] = address(user1);
+        _users[1] = address(user2);
+
+        uint256[] memory _allowances = new uint256[](2);
+        _allowances[0] = uint256(150e18);
+        _allowances[1] = uint256(150e18);
+
+        uint256[] memory _rounds = new uint256[](2);
+        _rounds[0] = 0;
+        _rounds[1] = 0;
+
+        address[] memory referrerAddresses = register.getReferrerAddresses(
+            user2
+        );
+
+        deXaPresale.batchAllowanceToUsers(_users, _allowances, _rounds);
+
+        // level1 amount check
+        assertEq(
+            busd.balanceOf(referrerAddresses[0]),
+            9000000000000000000,
+            "Amount not match"
+        );
+        // level2 amount check
+        assertEq(
+            busd.balanceOf(referrerAddresses[1]),
+            15000000000000000000,
+            "Amount not match"
+        );
+    }
+
+    function testBigRewardAmountForReferral() public {
+        changePrank(user1);
+        busd.transfer(address(1), 500000 ether);
+        changePrank(user2);
+        busd.transfer(address(1), 500000 ether);
+        changePrank(owner);
+
+        busd.approve(address(deXaPresale), 10000e18);
+        deXaPresale.depositBusdForReward(10000e18);
+
+        uint256 ownerDexaBalanceDump = deXa.balanceOf(owner);
+        deXa.transfer(address(1), ownerDexaBalanceDump);
+
+        uint256 ownerBusdBalanceDump = busd.balanceOf(owner);
+        busd.transfer(address(1), ownerBusdBalanceDump);
+
+        uint16[] memory _rates = new uint16[](6);
+        _rates[0] = (600);
+        _rates[1] = (400);
+        _rates[2] = (200);
+        _rates[3] = (200);
+        _rates[4] = (200);
+        _rates[5] = (200);
+        deXaPresale.setReferralRate(_rates);
+        deal({
+            token: address(deXa),
+            to: address(deXaPresale),
+            give: 50000000e18
+        });
+
+        deXaPresale.setRoundInfoForBusd(
+            0,
+            800000000000000000,
+            block.timestamp,
+            block.timestamp + 30 days,
+            4,
+            50000000e18,
+            150e18,
+            1500e18
+        );
+
+        address[] memory _users = new address[](2);
+        _users[0] = address(user1);
+        _users[1] = address(user2);
+
+        uint256[] memory _allowances = new uint256[](2);
+        _allowances[0] = uint256(1500e18);
+        _allowances[1] = uint256(1500e18);
+
+        uint256[] memory _rounds = new uint256[](2);
+        _rounds[0] = 0;
+        _rounds[1] = 0;
+
+        address[] memory referrerAddresses = register.getReferrerAddresses(
+            user2
+        );
+
+        deXaPresale.batchAllowanceToUsers(_users, _allowances, _rounds);
+
+        // level1 amount check
+        assertEq(
+            busd.balanceOf(referrerAddresses[0]),
+            90000000000000000000,
+            "Amount not match"
+        );
+        // level2 amount check
+        assertEq(
+            busd.balanceOf(referrerAddresses[1]),
+            150000000000000000000,
+            "Amount not match"
         );
     }
 }
