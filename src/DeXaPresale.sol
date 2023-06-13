@@ -27,7 +27,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     uint256 private constant MONTH = 86400 * 30;
     // uint256 private constant MONTH = 60 * 5; // for test
 
-    uint256 private constant MULTIPLER = 125000000000000000;
+    uint256 private constant MULTIPLER = 10000; //125000000000000000
     uint256 public tokenAmountForCoreTeam;
     uint256 public busdAmountForCoreTeam;
     uint256 public tokenAmountForOwner;
@@ -38,7 +38,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     mapping(address => uint256) public refRewardByToken;
     mapping(address => uint256) public claimableTokens;
 
-    uint8[referralDeep] public referralRate;
+    uint16[referralDeep] public referralRate;
 
     RoundInfo[3] public roundInfo;
 
@@ -64,9 +64,29 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         register = _register;
         coreTeamAddress = _coreTeam;
         companyAddress = _company;
-        percentForCoreTeam = 10000;
+        percentForCoreTeam = 1000;
         releaseMonth = 8;
     }
+
+    //  function  initialize (
+    //     address _dexa,
+    //     address _ntr,
+    //     address _busd,
+    //     address _register,
+    //     address _company,
+    //     address _coreTeam
+    // )  public initializer {
+    //     __Ownable_init();
+    //     __ReentrancyGuard_init();
+    //     dexa = IERC20(_dexa);
+    //     ntr = IERC20(_ntr);
+    //     busd = IERC20(_busd);
+    //     register = IRegistration(_register);
+    //     coreTeamAddress = _coreTeam;
+    //     companyAddress = _company;
+    //     percentForCoreTeam = 10000;
+    //     releaseMonth = 10;
+    // }
 
     function tokenPurchaseWithBUSD(
         uint256 _busdAmount
@@ -121,8 +141,11 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
                 break;
             }
             uint256 bonus = (_busdAmount * referralRate[i]) / MULTIPLER;
+            console2.log("bonus: ", bonus);
             refRewardByBUSD[referrers[i]] += bonus;
+            //send reward to reffers
             busdForOwner -= bonus;
+            IERC20(busd).transfer(referrers[i], bonus);
             emit SetRefRewardBUSD(
                 referrers[i],
                 msg.sender,
@@ -195,6 +218,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
             uint256 bonus = (_amount * referralRate[i]) / MULTIPLER;
             refRewardByToken[referrers[i]] += bonus;
             tokenForOwner -= bonus;
+            IERC20(token).transfer(referrers[i], bonus);
             emit SetRefRewardToken(
                 referrers[i],
                 msg.sender,
@@ -403,6 +427,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
             uint256 bonus = (_busdAmount * referralRate[i]) / MULTIPLER;
             refRewardByBUSD[referrers[i]] += bonus;
             busdForOwner -= bonus;
+            IERC20(busd).transfer(referrers[i], bonus);
             emit SetRefRewardBUSD(
                 referrers[i],
                 _user,
@@ -489,8 +514,12 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
                     break;
                 }
                 uint256 bonus = (_busdAmounts[i] * referralRate[i]) / MULTIPLER;
+                console2.log("[i]", i);
+                console2.log(" bonus :", bonus);
                 refRewardByBUSD[referrers[i]] += bonus;
                 busdForOwner -= bonus;
+                console2.log("---- referrer ---- : ", referrers[i]);
+                IERC20(busd).transfer(referrers[i], bonus);
                 emit SetRefRewardBUSD(
                     referrers[i],
                     _users[i],
@@ -604,7 +633,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         else return false;
     }
 
-    function setReferralRate(uint8[] memory _rates) public onlyOwner {
+    function setReferralRate(uint16[] memory _rates) public onlyOwner {
         require(_rates.length == referralDeep, "Invalid Input.");
         for (uint8 i = 0; i < _rates.length; i++) {
             referralRate[i] = _rates[i];
@@ -622,7 +651,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         public
         view
         returns (
-            uint8[referralDeep] memory _referralRate,
+            uint16[referralDeep] memory _referralRate,
             uint256 _percentForCoreTeam,
             address _coreTeamAddress,
             address _companyAddress
@@ -713,6 +742,10 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
 
     function changeCompanyAddress(address _newAddress) public onlyOwner {
         companyAddress = _newAddress;
+    }
+
+    function depositBusdForReward(uint256 _busdAmount) external onlyOwner {
+        IERC20(busd).transferFrom(msg.sender, address(this), _busdAmount);
     }
 
     function _hasEnded() internal view returns (bool) {
