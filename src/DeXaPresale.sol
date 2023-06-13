@@ -8,8 +8,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "forge-std/console2.sol";
-
 contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     uint8 public constant referralDeep = 6;
 
@@ -141,7 +139,6 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
                 break;
             }
             uint256 bonus = (_busdAmount * referralRate[i]) / MULTIPLER;
-            console2.log("bonus: ", bonus);
             refRewardByBUSD[referrers[i]] += bonus;
             //send reward to reffers
             busdForOwner -= bonus;
@@ -514,11 +511,10 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
                     break;
                 }
                 uint256 bonus = (_busdAmounts[i] * referralRate[i]) / MULTIPLER;
-                console2.log("[i]", i);
-                console2.log(" bonus :", bonus);
+
                 refRewardByBUSD[referrers[i]] += bonus;
                 busdForOwner -= bonus;
-                console2.log("---- referrer ---- : ", referrers[i]);
+
                 IERC20(busd).transfer(referrers[i], bonus);
                 emit SetRefRewardBUSD(
                     referrers[i],
