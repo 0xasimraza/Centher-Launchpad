@@ -2,11 +2,10 @@
 pragma solidity ^0.8.13;
 
 interface IDeXaPresale {
-    error BookingNotFound();
     error InvalidInputValue();
     error InvalidInputLength();
 
-    event TokenPurchaseWithToken(
+    event TokenPurchaseWithERC20(
         address indexed beneficiary,
         uint8 round,
         uint256 tokenAmount,
@@ -40,6 +39,26 @@ interface IDeXaPresale {
         uint256 amount
     );
 
+    event RateUpdatedForCoreTeam(uint256 oldRate, uint256 newRate);
+    event ReleaseMonthsUpdated(uint32 releaseMonth, uint32 _releaseMonths);
+    event RegistrationContractUpdated(address register, address _register);
+    event DexaContractUpdated(address deXa, address _deXa);
+    event ERC20ContractUpdated(address oldToken, address newToken);
+    event CoreTeamAccountUpdated(
+        address oldCoreTeamAddress,
+        address newCoreTeamAddress
+    );
+    event CompanyAccountUpdated(
+        address oldCompanyAccount,
+        address newCompanyAccount
+    );
+
+    event BusdRewardAmountDeposited(
+        uint256 depositedAmount,
+        uint256 currentBalance
+    );
+    event BusdRewardAmountWithdrawn(uint256 withdrawnAmount);
+
     struct ContributionInfo {
         uint256 contributedBusdAmount;
         uint256 contributedTokenAmount;
@@ -69,6 +88,66 @@ interface IDeXaPresale {
         uint256 maxContributionForToken;
         mapping(address => ContributionInfo) contributions;
     }
+
+    function setRoundInfoForBusd(
+        uint8 _index,
+        uint256 _priceForBusd,
+        uint256 _startTime,
+        uint256 _endTime,
+        uint8 _lockMonths,
+        uint256 _maxDexaAmountToSell,
+        uint256 _minContributionForBusd,
+        uint256 _maxContributionForBusd
+    ) external;
+
+    function setRoundInfoForERC20(
+        uint8 _index,
+        uint256 _priceForToken,
+        uint256 _startTime,
+        uint256 _endTime,
+        uint8 _lockMonths,
+        uint256 _maxDexaAmountToSell,
+        uint256 _minContributionForToken,
+        uint256 _maxContributionForToken
+    ) external;
+
+    function tokenPurchaseWithBUSD(uint256 _busdAmount) external;
+
+    function tokenPurchaseWithERC20(uint256 _amount) external;
+
+    function claimTokensFromBusd(uint8 _round) external;
+
+    function claimTokensFromERC20(uint8 _round) external;
+
+    function setReferralRate(uint16[] memory _rates) external;
+
+    function withdrawBusdForCoreTeam() external;
+
+    function withdrawTokenForCoreTeam() external;
+
+    function withdrawBUSD() external;
+
+    function withdrawToken() external;
+
+    function withdrawDexa() external;
+
+    function setRateForCoreTeam(uint256 _rate) external;
+
+    function setReleaseMonths(uint32 _releaseMonths) external;
+
+    function changeRegisterAddress(address _register) external;
+
+    function changeDexaAddress(address _deXa) external;
+
+    function changeTokenAddress(address _token) external;
+
+    function changeCoreTeamAddress(address _coreTeamAddress) external;
+
+    function changeCompanyAddress(address _newAddress) external;
+
+    function depositBusdForReward(uint256 _busdAmount) external;
+
+    function withdrawBusdForReward(address _receiver) external;
 
     function allowanceToUser(
         address _user,

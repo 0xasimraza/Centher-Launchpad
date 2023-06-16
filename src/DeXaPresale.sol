@@ -67,29 +67,9 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         releaseMonth = 8;
     }
 
-    //  function  initialize (
-    //     address _dexa,
-    //     address _ntr,
-    //     address _busd,
-    //     address _register,
-    //     address _company,
-    //     address _coreTeam
-    // )  public initializer {
-    //     __Ownable_init();
-    //     __ReentrancyGuard_init();
-    //     dexa = IERC20(_dexa);
-    //     ntr = IERC20(_ntr);
-    //     busd = IERC20(_busd);
-    //     register = IRegistration(_register);
-    //     coreTeamAddress = _coreTeam;
-    //     companyAddress = _company;
-    //     percentForCoreTeam = 10000;
-    //     releaseMonth = 10;
-    // }
-
     function tokenPurchaseWithBUSD(
         uint256 _busdAmount
-    ) public onlyRegisterUser {
+    ) external override onlyRegisterUser {
         int8 _round = getRound();
         require(
             _round == 0 || _round == 1 || _round == 2,
@@ -163,7 +143,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         );
     }
 
-    function tokenPurchaseWithToken(uint256 _amount) public onlyRegisterUser {
+    function tokenPurchaseWithERC20(uint256 _amount) external onlyRegisterUser {
         int8 _round = getRound();
         require(
             _round == 0 || _round == 1 || _round == 2,
@@ -228,7 +208,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
 
         tokenAmountForOwner += tokenForOwner;
 
-        emit TokenPurchaseWithToken(
+        emit TokenPurchaseWithERC20(
             msg.sender,
             uint8(_round),
             _amount,
@@ -263,9 +243,9 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         emit TokenClaim(msg.sender, _round, tokenAmount);
     }
 
-    function claimTokensFromToken(
+    function claimTokensFromERC20(
         uint8 _round
-    ) external nonReentrant onlyRegisterUser {
+    ) external override nonReentrant onlyRegisterUser {
         ContributionInfo storage cInfo = roundInfo[_round].contributions[
             msg.sender
         ];
@@ -557,7 +537,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         uint256 _maxDexaAmountToSell,
         uint256 _minContributionForBusd,
         uint256 _maxContributionForBusd
-    ) public onlyOwner {
+    ) external override onlyOwner {
         RoundInfo storage info = roundInfo[_index];
         info.priceForBusd = _priceForBusd;
         info.priceForToken = 0;
@@ -573,7 +553,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         info.maxContributionForToken = 0;
     }
 
-    function setRoundInfoForToken(
+    function setRoundInfoForERC20(
         uint8 _index,
         uint256 _priceForToken,
         uint256 _startTime,
@@ -582,7 +562,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         uint256 _maxDexaAmountToSell,
         uint256 _minContributionForToken,
         uint256 _maxContributionForToken
-    ) public onlyOwner {
+    ) external override onlyOwner {
         RoundInfo storage info = roundInfo[_index];
         info.priceForBusd = 0;
         info.priceForToken = _priceForToken;
@@ -596,6 +576,127 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         info.minContributionForToken = _minContributionForToken;
         info.maxContributionForBusd = 0;
         info.maxContributionForToken = _maxContributionForToken;
+    }
+
+    function withdrawBusdForCoreTeam() external override onlyOwner {
+        int8 _round = getRound();
+        if (
+            (_round == 0 || _round == 1 || _round == 2) &&
+            hasSoldOut(uint8(_round), true)
+        ) {} else require(_hasEnded(), "Round is not over");
+        require(busdAmountForCoreTeam > 0, "Nothing to claim.");
+        uint256 amount = busdAmountForCoreTeam;
+        busdAmountForCoreTeam = 0;
+        IERC20(busd).transfer(coreTeamAddress, amount);
+    }
+
+    function withdrawTokenForCoreTeam() external override onlyOwner {
+        int8 _round = getRound();
+        if (
+            (_round == 0 || _round == 1 || _round == 2) &&
+            hasSoldOut(uint8(_round), false)
+        ) {} else require(_hasEnded(), "Round is not over");
+        require(tokenAmountForCoreTeam > 0, "Nothing to claim.");
+        uint256 amount = tokenAmountForCoreTeam;
+        tokenAmountForCoreTeam = 0;
+        IERC20(token).transfer(coreTeamAddress, amount);
+    }
+
+    function withdrawBUSD() external override onlyOwner {
+        int8 _round = getRound();
+        if (
+            (_round == 0 || _round == 1 || _round == 2) &&
+            hasSoldOut(uint8(_round), true)
+        ) {} else require(_hasEnded(), "Round is not over");
+        uint256 amount = busdAmountForOwner;
+        busdAmountForOwner = 0;
+        IERC20(busd).transfer(companyAddress, amount);
+    }
+
+    function withdrawToken() external override onlyOwner {
+        int8 _round = getRound();
+        if (
+            (_round == 0 || _round == 1 || _round == 2) &&
+            hasSoldOut(uint8(_round), false)
+        ) {} else require(_hasEnded(), "Round is not over");
+        require(tokenAmountForOwner > 0, "Nothing to claim.");
+        uint256 amount = tokenAmountForOwner;
+        tokenAmountForOwner = 0;
+        IERC20(token).transfer(companyAddress, amount);
+    }
+
+    function withdrawDexa() external override onlyOwner {
+        require(_hasEnded(), "Round is not over");
+        uint256 tokens = IERC20(deXa).balanceOf(address(this));
+        IERC20(deXa).transfer(msg.sender, tokens);
+    }
+
+    function setRateForCoreTeam(uint256 _rate) external override onlyOwner {
+        require(_rate < 10001, "Error: not more than 100%");
+        emit RateUpdatedForCoreTeam(percentForCoreTeam, _rate);
+        percentForCoreTeam = _rate;
+    }
+
+    function setReleaseMonths(
+        uint32 _releaseMonths
+    ) external override onlyOwner {
+        emit ReleaseMonthsUpdated(releaseMonth, _releaseMonths);
+        releaseMonth = _releaseMonths;
+    }
+
+    function changeRegisterAddress(
+        address _register
+    ) external override onlyOwner {
+        emit RegistrationContractUpdated(register, _register);
+        register = _register;
+    }
+
+    function changeDexaAddress(address _deXa) external override onlyOwner {
+        emit DexaContractUpdated(deXa, _deXa);
+        deXa = _deXa;
+    }
+
+    function changeTokenAddress(address _token) external override onlyOwner {
+        emit ERC20ContractUpdated(token, _token);
+        token = _token;
+    }
+
+    function changeCoreTeamAddress(
+        address _coreTeamAddress
+    ) external override onlyOwner {
+        emit CoreTeamAccountUpdated(coreTeamAddress, _coreTeamAddress);
+        coreTeamAddress = _coreTeamAddress;
+    }
+
+    function changeCompanyAddress(
+        address _newAddress
+    ) external override onlyOwner {
+        emit CompanyAccountUpdated(companyAddress, _newAddress);
+        companyAddress = _newAddress;
+    }
+
+    function depositBusdForReward(
+        uint256 _busdAmount
+    ) external override onlyOwner {
+        busdBalanceForReward += _busdAmount;
+        IERC20(busd).transferFrom(msg.sender, address(this), _busdAmount);
+        emit BusdRewardAmountDeposited(_busdAmount, busdBalanceForReward);
+    }
+
+    function withdrawBusdForReward(
+        address _receiver
+    ) external override onlyOwner {
+        uint256 balance = busdBalanceForReward;
+        busdBalanceForReward = 0;
+        IERC20(busd).transfer(_receiver, balance);
+        emit BusdRewardAmountWithdrawn(balance);
+    }
+
+    function setReferralRate(uint16[] memory _rates) external onlyOwner {
+        require(_rates.length == referralDeep, "Invalid Input.");
+        for (uint8 i = 0; i < _rates.length; i++) {
+            referralRate[i] = _rates[i];
+        }
     }
 
     function getRound() public view returns (int8) {
@@ -641,13 +742,6 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         else return false;
     }
 
-    function setReferralRate(uint16[] memory _rates) public onlyOwner {
-        require(_rates.length == referralDeep, "Invalid Input.");
-        for (uint8 i = 0; i < _rates.length; i++) {
-            referralRate[i] = _rates[i];
-        }
-    }
-
     function getContribute(
         address _user,
         uint8 _round
@@ -669,98 +763,6 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         _percentForCoreTeam = percentForCoreTeam;
         _coreTeamAddress = coreTeamAddress;
         _companyAddress = companyAddress;
-    }
-
-    function withdrawBusdForCoreTeam() external onlyOwner {
-        int8 _round = getRound();
-        if (
-            (_round == 0 || _round == 1 || _round == 2) &&
-            hasSoldOut(uint8(_round), true)
-        ) {} else require(_hasEnded(), "Round is not over");
-        require(busdAmountForCoreTeam > 0, "Nothing to claim.");
-        uint256 amount = busdAmountForCoreTeam;
-        busdAmountForCoreTeam = 0;
-        IERC20(busd).transfer(coreTeamAddress, amount);
-    }
-
-    function withdrawTokenForCoreTeam() external onlyOwner {
-        int8 _round = getRound();
-        if (
-            (_round == 0 || _round == 1 || _round == 2) &&
-            hasSoldOut(uint8(_round), false)
-        ) {} else require(_hasEnded(), "Round is not over");
-        require(tokenAmountForCoreTeam > 0, "Nothing to claim.");
-        uint256 amount = tokenAmountForCoreTeam;
-        tokenAmountForCoreTeam = 0;
-        IERC20(token).transfer(coreTeamAddress, amount);
-    }
-
-    function withdrawBUSD() external onlyOwner {
-        int8 _round = getRound();
-        if (
-            (_round == 0 || _round == 1 || _round == 2) &&
-            hasSoldOut(uint8(_round), true)
-        ) {} else require(_hasEnded(), "Round is not over");
-        uint256 amount = busdAmountForOwner;
-        busdAmountForOwner = 0;
-        IERC20(busd).transfer(companyAddress, amount);
-    }
-
-    function withdrawToken() public onlyOwner {
-        int8 _round = getRound();
-        if (
-            (_round == 0 || _round == 1 || _round == 2) &&
-            hasSoldOut(uint8(_round), false)
-        ) {} else require(_hasEnded(), "Round is not over");
-        require(tokenAmountForOwner > 0, "Nothing to claim.");
-        uint256 amount = tokenAmountForOwner;
-        tokenAmountForOwner = 0;
-        IERC20(token).transfer(companyAddress, amount);
-    }
-
-    function withdrawDexa() public onlyOwner {
-        require(_hasEnded(), "Round is not over");
-        uint256 tokens = IERC20(deXa).balanceOf(address(this));
-        IERC20(deXa).transfer(msg.sender, tokens);
-    }
-
-    function setRateForCoreTeam(uint32 _rate) public onlyOwner {
-        percentForCoreTeam = _rate;
-    }
-
-    function setReleaseMonths(uint32 _releaseMonths) public onlyOwner {
-        releaseMonth = _releaseMonths;
-    }
-
-    function changeRegisterAddress(address _register) public onlyOwner {
-        register = _register;
-    }
-
-    function changeDexaAddress(address _deXa) public onlyOwner {
-        deXa = _deXa;
-    }
-
-    function changeTokenAddress(address _token) public onlyOwner {
-        token = _token;
-    }
-
-    function changeCoreTeamAddress(address _coreTeamAddress) public onlyOwner {
-        coreTeamAddress = _coreTeamAddress;
-    }
-
-    function changeCompanyAddress(address _newAddress) public onlyOwner {
-        companyAddress = _newAddress;
-    }
-
-    function depositBusdForReward(uint256 _busdAmount) external onlyOwner {
-        busdBalanceForReward += _busdAmount;
-        IERC20(busd).transferFrom(msg.sender, address(this), _busdAmount);
-    }
-
-    function withdrawBusdForReward(address _receiver) external onlyOwner {
-        uint256 balance = busdBalanceForReward;
-        busdBalanceForReward = 0;
-        IERC20(busd).transfer(_receiver, balance);
     }
 
     function _hasEnded() internal view returns (bool) {
