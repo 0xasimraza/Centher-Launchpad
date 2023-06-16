@@ -162,8 +162,7 @@ contract TokenTest is Test {
             1000e18
         );
 
-        vm.stopPrank();
-        vm.startPrank(user1);
+        changePrank(user1);
 
         busd.approve(address(deXaPresale), 1000e18);
 
@@ -294,9 +293,7 @@ contract TokenTest is Test {
 
         deXaPresale.batchAllowanceToUsers(_users, _allowances, _rounds);
 
-        vm.stopPrank();
-
-        vm.startPrank(user1);
+        changePrank(user1);
 
         vm.warp(block.timestamp + 30 days * 12);
         deXaPresale.claimTokensFromBusd(0);
@@ -319,7 +316,7 @@ contract TokenTest is Test {
             give: 10000000e18
         });
 
-        deXaPresale.setRoundInfoForToken(
+        deXaPresale.setRoundInfoForERC20(
             0,
             6230000000000000,
             block.timestamp,
@@ -330,15 +327,14 @@ contract TokenTest is Test {
             5000e18
         );
 
-        vm.stopPrank();
-        vm.startPrank(user1);
+        changePrank(user1);
 
         wbnb.approve(address(deXaPresale), 4500e18);
 
-        deXaPresale.tokenPurchaseWithToken(4500e18);
+        deXaPresale.tokenPurchaseWithERC20(4500e18);
 
         vm.warp(block.timestamp + 30 days * 12);
-        deXaPresale.claimTokensFromToken(0);
+        deXaPresale.claimTokensFromERC20(0);
 
         assertEq(
             deXa.balanceOf(address(user1)),
@@ -347,6 +343,7 @@ contract TokenTest is Test {
         );
     }
 
+    // wbnb cases
     function testClaimDexaTwoTimesWithMaxWBNB() public {
         vm.startPrank(owner);
         deXaPresale.changeTokenAddress(address(wbnb));
@@ -357,7 +354,7 @@ contract TokenTest is Test {
             give: 10000000e18
         });
 
-        deXaPresale.setRoundInfoForToken(
+        deXaPresale.setRoundInfoForERC20(
             0,
             6230000000000000,
             block.timestamp,
@@ -373,10 +370,10 @@ contract TokenTest is Test {
 
         wbnb.approve(address(deXaPresale), 4500e18);
 
-        deXaPresale.tokenPurchaseWithToken(4500e18);
+        deXaPresale.tokenPurchaseWithERC20(4500e18);
 
         vm.warp(block.timestamp + 30 days * 5);
-        deXaPresale.claimTokensFromToken(0);
+        deXaPresale.claimTokensFromERC20(0);
         uint256 balanceAfter1stClaim = deXa.balanceOf(address(user1));
         assertEq(
             balanceAfter1stClaim,
@@ -384,7 +381,7 @@ contract TokenTest is Test {
             "Amount not received as expected"
         );
         vm.warp(block.timestamp + 30 days);
-        deXaPresale.claimTokensFromToken(0);
+        deXaPresale.claimTokensFromERC20(0);
         uint256 balanceAfter2ndClaim = deXa.balanceOf(address(user1));
         assertEq(
             balanceAfter2ndClaim,
@@ -395,7 +392,7 @@ contract TokenTest is Test {
 
     function testRewardAmountForReferral() public {
         //clear balances
-        changePrank(user1);
+        vm.startPrank(user1);
         busd.transfer(address(1), 500000 ether);
         changePrank(user2);
         busd.transfer(address(1), 500000 ether);
@@ -469,7 +466,7 @@ contract TokenTest is Test {
     }
 
     function testBigRewardAmountForReferral() public {
-        changePrank(user1);
+        vm.startPrank(user1);
         busd.transfer(address(1), 500000 ether);
         changePrank(user2);
         busd.transfer(address(1), 500000 ether);
