@@ -35,7 +35,8 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
 
     mapping(address => uint256) public refRewardByBUSD;
     mapping(address => uint256) public refRewardByToken;
-    mapping(address => uint256) public claimableTokens;
+    mapping(address => bool) public userDeposits;
+    // mapping(address => uint256) public claimableTokens;
 
     uint16[referralDeep] public referralRate;
 
@@ -76,8 +77,6 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
             "Not started any Round."
         );
 
-        require(!hasSoldOut(uint8(_round), true), "Dexa is already sold out!");
-
         RoundInfo storage info = roundInfo[uint8(_round)];
         require(info.busdEnabled, "Not enable to purchase with BUSD");
 
@@ -93,6 +92,8 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         IERC20(busd).transferFrom(msg.sender, address(this), _busdAmount);
 
         info.busdRaised = info.busdRaised + _busdAmount;
+
+        require(!hasSoldOut(uint8(_round), true), "Dexa is already sold out!");
 
         info.contributions[msg.sender].contributedBusdAmount += _busdAmount;
         if (info.contributions[msg.sender].purchaseTimeForBusd == 0) {
@@ -360,8 +361,6 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
             "Not started any Round."
         );
 
-        require(!hasSoldOut(uint8(_round), true), "Dexa is already sold out!");
-
         RoundInfo storage info = roundInfo[uint8(_round)];
         require(info.busdEnabled, "Not enable to purchase with BUSD");
 
@@ -373,10 +372,12 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
             _busdAmount <= info.maxContributionForBusd,
             "Max contribution criteria not met"
         );
-
-        claimableTokens[_user] += _busdAmount;
+        require(!userDeposits[_user], "Already Deposited");
+        userDeposits[_user] = true;
+        // claimableTokens[_user] += _busdAmount;
 
         info.busdRaised = info.busdRaised + _busdAmount;
+        require(!hasSoldOut(uint8(_round), true), "Dexa is already sold out!");
 
         info.contributions[msg.sender].contributedBusdAmount += _busdAmount;
         if (info.contributions[_user].purchaseTimeForBusd == 0) {
@@ -449,11 +450,6 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
                 "Not started any Round."
             );
 
-            require(
-                !hasSoldOut(uint8(_rounds[i]), true),
-                "Dexa is already sold out!"
-            );
-
             RoundInfo storage info = roundInfo[uint8(_rounds[i])];
             require(info.busdEnabled, "Not enable to purchase with BUSD");
 
@@ -466,9 +462,15 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
                 "Max contribution criteria not met"
             );
 
-            claimableTokens[_users[i]] += _busdAmounts[i];
+            require(!userDeposits[_users[i]], "Already Deposited");
+            userDeposits[_users[i]] = true;
+            // claimableTokens[_users[i]] += _busdAmounts[i];
 
             info.busdRaised = info.busdRaised + _busdAmounts[i];
+            require(
+                !hasSoldOut(uint8(_rounds[i]), true),
+                "Dexa is already sold out!"
+            );
 
             info.contributions[_users[i]].contributedBusdAmount += _busdAmounts[
                 i
@@ -538,6 +540,8 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         uint256 _minContributionForBusd,
         uint256 _maxContributionForBusd
     ) external override onlyOwner {
+        require(_lockMonths > 0 && _lockMonths < 36, "Invalid Lock period");
+        require(_priceForBusd > 0, "Invalid price rate");
         RoundInfo storage info = roundInfo[_index];
         info.priceForBusd = _priceForBusd;
         info.priceForToken = 0;
@@ -563,6 +567,8 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         uint256 _minContributionForToken,
         uint256 _maxContributionForToken
     ) external override onlyOwner {
+        require(_lockMonths > 0 && _lockMonths < 36, "Invalid Lock period");
+        require(_priceForToken > 0, "Invalid price rate");
         RoundInfo storage info = roundInfo[_index];
         info.priceForBusd = 0;
         info.priceForToken = _priceForToken;
@@ -693,7 +699,9 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     }
 
     function setReferralRate(uint16[] memory _rates) external onlyOwner {
-        require(_rates.length == referralDeep, "Invalid Input.");
+        if (_rates.length != referralDeep) {
+            revert InvalidInputLength();
+        }
         for (uint8 i = 0; i < _rates.length; i++) {
             referralRate[i] = _rates[i];
         }
@@ -733,10 +741,10 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
 
     function hasSoldOut(uint8 _round, bool _isBusd) public view returns (bool) {
         RoundInfo storage info = roundInfo[_round];
-        uint256 dexaAmount = 0;
-        if (_isBusd)
-            dexaAmount = (info.busdRaised * MULTIPLER) / info.priceForBusd;
-        else dexaAmount = (info.tokenRaised * MULTIPLER) / info.priceForToken;
+        uint256 dexaAmount;
+        if (_isBusd) {
+            dexaAmount = (info.busdRaised * 1e18) / info.priceForBusd;
+        } else dexaAmount = (info.tokenRaised * 1e18) / info.priceForToken;
 
         if (dexaAmount > info.maxDexaAmountToSell) return true;
         else return false;
