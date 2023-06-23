@@ -17,6 +17,12 @@ interface IDeXaPresale {
         uint256 busdAmount,
         uint256 busdAmountForOwner
     );
+    event TokenPurchaseWithNTR(
+        address indexed beneficiary,
+        uint8 round,
+        uint256 busdAmount,
+        uint256 busdAmountForOwner
+    );
     event TokenClaim(
         address indexed beneficiary,
         uint8 round,
@@ -61,31 +67,41 @@ interface IDeXaPresale {
 
     struct ContributionInfo {
         uint256 contributedBusdAmount;
-        uint256 contributedTokenAmount;
+        uint256 contributedNtrAmount;
+        // uint256 contributedTokenAmount;
         uint256 purchaseTimeForBusd;
-        uint256 purchaseTimeForToken;
+        uint256 purchaseTimeForNtr;
+        // uint256 purchaseTimeForToken;
         uint256 claimedTokenAmountForBusd;
-        uint256 claimedTokenAmountForToken;
+        uint256 claimedTokenAmountForNtr;
+        // uint256 claimedTokenAmountForToken;
         uint256 totalClaimableTokenAmountForBusd;
-        uint256 totalClaimableTokenAmountForToken;
+        uint256 totalClaimableTokenAmountForNtr;
+        // uint256 totalClaimableTokenAmountForToken;
         uint256 lastClaimedTimeForBusd;
+        uint256 lastClaimedTimeForNtr;
     }
 
     struct RoundInfo {
         uint256 priceForBusd;
-        uint256 priceForToken;
+        // uint256 priceForToken;
+        uint256 priceForNtr;
         uint256 startTime;
         uint256 endTime;
         uint8 lockMonths;
         uint256 maxDexaAmountToSell;
         bool busdEnabled;
-        bool tokenEnabled;
+        bool ntrEnabled;
+        // bool tokenEnabled;
         uint256 busdRaised;
-        uint256 tokenRaised;
+        uint256 ntrRaised;
+        // uint256 tokenRaised;
         uint256 minContributionForBusd;
-        uint256 minContributionForToken;
+        // uint256 minContributionForToken;
         uint256 maxContributionForBusd;
-        uint256 maxContributionForToken;
+        // uint256 maxContributionForToken;
+        uint256 minContributionForNtr;
+        uint256 maxContributionForNtr;
         mapping(address => ContributionInfo) contributions;
     }
 
@@ -100,24 +116,39 @@ interface IDeXaPresale {
         uint256 _maxContributionForBusd
     ) external;
 
-    function setRoundInfoForERC20(
+    function setRoundInfoForNtr(
         uint8 _index,
-        uint256 _priceForToken,
+        uint256 _priceForNtr,
         uint256 _startTime,
         uint256 _endTime,
         uint8 _lockMonths,
         uint256 _maxDexaAmountToSell,
-        uint256 _minContributionForToken,
-        uint256 _maxContributionForToken
+        uint256 _minContributionForNtr,
+        uint256 _maxContributionForNtr
     ) external;
+
+    // function setRoundInfoForERC20(
+    //     uint8 _index,
+    //     uint256 _priceForToken,
+    //     uint256 _startTime,
+    //     uint256 _endTime,
+    //     uint8 _lockMonths,
+    //     uint256 _maxDexaAmountToSell,
+    //     uint256 _minContributionForToken,
+    //     uint256 _maxContributionForToken
+    // ) external;
 
     function tokenPurchaseWithBUSD(uint256 _busdAmount) external;
 
-    function tokenPurchaseWithERC20(uint256 _amount) external;
+    function tokenPurchaseWithNTR(uint256 _ntrAmount) external;
+
+    // function tokenPurchaseWithERC20(uint256 _amount) external;
 
     function claimTokensFromBusd(uint8 _round) external;
 
-    function claimTokensFromERC20(uint8 _round) external;
+    // function claimTokensFromNtr(uint8 _round) external;
+
+    // function claimTokensFromERC20(uint8 _round) external;
 
     function setReferralRate(uint16[] memory _rates) external;
 

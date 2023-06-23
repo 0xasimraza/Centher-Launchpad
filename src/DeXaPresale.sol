@@ -7,6 +7,7 @@ import "./interfaces/IRegistration.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "forge-std/console2.sol";
 
 contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     uint8 public constant referralDeep = 6;
@@ -20,6 +21,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
 
     address public token;
     address public busd;
+    address public ntr;
     address public register;
 
     uint256 public busdBalanceForReward;
@@ -52,14 +54,14 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
 
     constructor(
         address _deXa,
-        address _token,
+        address _ntr,
         address _busd,
         address _register,
         address _coreTeam,
         address _company
     ) Ownable() {
         deXa = _deXa;
-        token = _token;
+        ntr = _ntr;
         busd = _busd;
         register = _register;
         coreTeamAddress = _coreTeam;
@@ -144,78 +146,124 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         );
     }
 
-    function tokenPurchaseWithERC20(uint256 _amount) external onlyRegisterUser {
+    function tokenPurchaseWithNTR(
+        uint256 _ntrAmount
+    ) external override onlyRegisterUser {
         int8 _round = getRound();
         require(
             _round == 0 || _round == 1 || _round == 2,
             "Not started any Round."
         );
 
-        require(!hasSoldOut(uint8(_round), false), "Dexa is already sold out!");
-
         RoundInfo storage info = roundInfo[uint8(_round)];
-        require(info.tokenEnabled, "Not enable to purchase with NTR");
+        require(info.ntrEnabled, "Not enable to purchase with NTR");
 
         require(
-            _amount >= info.minContributionForToken,
+            _ntrAmount >= info.minContributionForNtr,
             "Min contribution criteria not met"
         );
         require(
-            _amount <= info.maxContributionForToken,
+            _ntrAmount <= info.maxContributionForNtr,
             "Max contribution criteria not met"
         );
 
-        IERC20(token).transferFrom(msg.sender, address(this), _amount);
+        IERC20(ntr).transferFrom(msg.sender, address(this), _ntrAmount);
 
-        info.tokenRaised = info.tokenRaised + _amount;
+        info.ntrRaised = info.ntrRaised + _ntrAmount;
 
-        info.contributions[msg.sender].contributedTokenAmount += _amount;
+        require(!hasSoldOut(uint8(_round), false), "Dexa is already sold out!");
 
-        if (info.contributions[msg.sender].purchaseTimeForToken == 0) {
-            info.contributions[msg.sender].purchaseTimeForToken = block
-                .timestamp;
+        info.contributions[msg.sender].contributedNtrAmount += _ntrAmount;
+        if (info.contributions[msg.sender].purchaseTimeForNtr == 0) {
+            info.contributions[msg.sender].purchaseTimeForNtr = block.timestamp;
         }
 
-        uint256 tokenForCoreTeam = (_amount * percentForCoreTeam) / MULTIPLER;
-
-        tokenAmountForCoreTeam += tokenForCoreTeam;
-
-        uint256 tokenForOwner = _amount - tokenForCoreTeam;
-
-        uint256 tokenAmount = (_amount * 1e18) / info.priceForToken;
+        uint256 tokenAmount = (_ntrAmount * 1e18) / info.priceForNtr; //made change of multiplier
 
         info
             .contributions[msg.sender]
-            .totalClaimableTokenAmountForToken += tokenAmount;
+            .totalClaimableTokenAmountForNtr += tokenAmount;
 
-        address[] memory referrers = IRegistration(register)
-            .getReferrerAddresses(msg.sender);
-        for (uint8 i = 0; i < referralDeep; i++) {
-            if (referrers[i] == address(0)) {
-                break;
-            }
-            uint256 bonus = (_amount * referralRate[i]) / MULTIPLER;
-            refRewardByToken[referrers[i]] += bonus;
-            tokenForOwner -= bonus;
-            IERC20(token).transfer(referrers[i], bonus);
-            emit SetRefRewardToken(
-                referrers[i],
-                msg.sender,
-                uint8(i + 1),
-                uint8(_round),
-                bonus
-            );
-        }
-
-        tokenAmountForOwner += tokenForOwner;
-
-        emit TokenPurchaseWithERC20(
+        emit TokenPurchaseWithNTR(
             msg.sender,
             uint8(_round),
-            _amount,
-            tokenForOwner
+            _ntrAmount,
+            _ntrAmount
         );
     }
+
+    // function tokenPurchaseWithERC20(uint256 _amount) external onlyRegisterUser {
+    //     int8 _round = getRound();
+    //     require(
+    //         _round == 0 || _round == 1 || _round == 2,
+    //         "Not started any Round."
+    //     );
+
+    //     require(!hasSoldOut(uint8(_round), false), "Dexa is already sold out!");
+
+    //     RoundInfo storage info = roundInfo[uint8(_round)];
+    //     require(info.tokenEnabled, "Not enable to purchase with NTR");
+
+    //     require(
+    //         _amount >= info.minContributionForToken,
+    //         "Min contribution criteria not met"
+    //     );
+    //     require(
+    //         _amount <= info.maxContributionForToken,
+    //         "Max contribution criteria not met"
+    //     );
+
+    //     IERC20(token).transferFrom(msg.sender, address(this), _amount);
+
+    //     info.tokenRaised = info.tokenRaised + _amount;
+
+    //     info.contributions[msg.sender].contributedTokenAmount += _amount;
+
+    //     if (info.contributions[msg.sender].purchaseTimeForToken == 0) {
+    //         info.contributions[msg.sender].purchaseTimeForToken = block
+    //             .timestamp;
+    //     }
+
+    //     uint256 tokenForCoreTeam = (_amount * percentForCoreTeam) / MULTIPLER;
+
+    //     tokenAmountForCoreTeam += tokenForCoreTeam;
+
+    //     uint256 tokenForOwner = _amount - tokenForCoreTeam;
+
+    //     uint256 tokenAmount = (_amount * 1e18) / info.priceForToken;
+
+    //     info
+    //         .contributions[msg.sender]
+    //         .totalClaimableTokenAmountForToken += tokenAmount;
+
+    //     address[] memory referrers = IRegistration(register)
+    //         .getReferrerAddresses(msg.sender);
+    //     for (uint8 i = 0; i < referralDeep; i++) {
+    //         if (referrers[i] == address(0)) {
+    //             break;
+    //         }
+    //         uint256 bonus = (_amount * referralRate[i]) / MULTIPLER;
+    //         refRewardByToken[referrers[i]] += bonus;
+    //         tokenForOwner -= bonus;
+    //         IERC20(token).transfer(referrers[i], bonus);
+    //         emit SetRefRewardToken(
+    //             referrers[i],
+    //             msg.sender,
+    //             uint8(i + 1),
+    //             uint8(_round),
+    //             bonus
+    //         );
+    //     }
+
+    //     tokenAmountForOwner += tokenForOwner;
+
+    //     emit TokenPurchaseWithERC20(
+    //         msg.sender,
+    //         uint8(_round),
+    //         _amount,
+    //         tokenForOwner
+    //     );
+    // }
 
     function claimTokensFromBusd(
         uint8 _round
@@ -244,29 +292,56 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         emit TokenClaim(msg.sender, _round, tokenAmount);
     }
 
-    function claimTokensFromERC20(
+    function claimTokensFromNtr(
         uint8 _round
-    ) external override nonReentrant onlyRegisterUser {
+    ) external nonReentrant onlyRegisterUser {
         ContributionInfo storage cInfo = roundInfo[_round].contributions[
             msg.sender
         ];
-        require(cInfo.contributedTokenAmount > 0, "Nothing to claim");
+        require(cInfo.contributedNtrAmount > 0, "Nothing to claim");
+
         require(
-            (block.timestamp - cInfo.purchaseTimeForToken) / MONTH >=
+            (block.timestamp - cInfo.purchaseTimeForNtr) / MONTH >=
                 roundInfo[_round].lockMonths,
             "Locked"
         );
 
-        uint256 tokenAmount = getClaimableTokenAmountFromToken(
+        uint256 tokenAmount = getClaimableTokenAmountFromNtr(
             _round,
             msg.sender
         );
-        cInfo.claimedTokenAmountForToken += tokenAmount;
+        cInfo.claimedTokenAmountForNtr += tokenAmount;
+
+        cInfo.lastClaimedTimeForNtr = block.timestamp;
 
         IERC20(deXa).transfer(msg.sender, tokenAmount);
 
         emit TokenClaim(msg.sender, _round, tokenAmount);
     }
+
+    // function claimTokensFromERC20(
+    //     uint8 _round
+    // ) external override nonReentrant onlyRegisterUser {
+    //     ContributionInfo storage cInfo = roundInfo[_round].contributions[
+    //         msg.sender
+    //     ];
+    //     require(cInfo.contributedTokenAmount > 0, "Nothing to claim");
+    //     require(
+    //         (block.timestamp - cInfo.purchaseTimeForToken) / MONTH >=
+    //             roundInfo[_round].lockMonths,
+    //         "Locked"
+    //     );
+
+    //     uint256 tokenAmount = getClaimableTokenAmountFromToken(
+    //         _round,
+    //         msg.sender
+    //     );
+    //     cInfo.claimedTokenAmountForToken += tokenAmount;
+
+    //     IERC20(deXa).transfer(msg.sender, tokenAmount);
+
+    //     emit TokenClaim(msg.sender, _round, tokenAmount);
+    // }
 
     function getClaimableTokenAmountFromBusd(
         uint8 _round,
@@ -297,55 +372,59 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         }
     }
 
-    // function getClaimableTokenAmountFromBusd(
-    //     uint8 _round,
-    //     address _user
-    // ) public view returns (uint256 tokenAmount) {
-    //     RoundInfo storage info = roundInfo[_round];
-    //     ContributionInfo memory cInfo = info.contributions[_user];
-
-    //     if (info.lockMonths <= block.timestamp) {
-    //         uint256 timeDiff = block.timestamp - cInfo.lastClaimedTimeForBusd;
-    //         tokenAmount = cInfo.totalClaimableTokenAmountForBusd * MULTIPLER;
-    //         tokenAmount = timeDiff * tokenAmount;
-    //         if (
-    //             releaseMonth * MONTH + info.lockMonths * MONTH <=
-    //             block.timestamp
-    //         ) {
-    //             uint256 remainingAmount = cInfo
-    //                 .totalClaimableTokenAmountForBusd -
-    //                 cInfo.claimedTokenAmountForBusd;
-    //             tokenAmount += remainingAmount;
-    //         }
-    //     } else {
-    //         return 0;
-    //     }
-    // }
-
-    function getClaimableTokenAmountFromToken(
+    function getClaimableTokenAmountFromNtr(
         uint8 _round,
         address _user
     ) public view returns (uint256) {
         RoundInfo storage info = roundInfo[_round];
         ContributionInfo memory contribution = info.contributions[_user];
+
         if (
-            (block.timestamp - contribution.purchaseTimeForToken) / MONTH >
+            (block.timestamp - contribution.purchaseTimeForNtr) / MONTH >
             info.lockMonths
         ) {
             uint256 months = (block.timestamp -
-                contribution.purchaseTimeForToken) /
+                contribution.purchaseTimeForNtr) /
                 MONTH -
                 info.lockMonths;
+
             if (months > releaseMonth) months = releaseMonth;
+
             uint256 tokenAmount = (months *
-                contribution.totalClaimableTokenAmountForToken) /
+                contribution.totalClaimableTokenAmountForNtr) /
                 releaseMonth -
-                contribution.claimedTokenAmountForToken;
+                contribution.claimedTokenAmountForNtr;
+
             return tokenAmount;
         } else {
             return 0;
         }
     }
+
+    // function getClaimableTokenAmountFromToken(
+    //     uint8 _round,
+    //     address _user
+    // ) public view returns (uint256) {
+    //     RoundInfo storage info = roundInfo[_round];
+    //     ContributionInfo memory contribution = info.contributions[_user];
+    //     if (
+    //         (block.timestamp - contribution.purchaseTimeForToken) / MONTH >
+    //         info.lockMonths
+    //     ) {
+    //         uint256 months = (block.timestamp -
+    //             contribution.purchaseTimeForToken) /
+    //             MONTH -
+    //             info.lockMonths;
+    //         if (months > releaseMonth) months = releaseMonth;
+    //         uint256 tokenAmount = (months *
+    //             contribution.totalClaimableTokenAmountForToken) /
+    //             releaseMonth -
+    //             contribution.claimedTokenAmountForToken;
+    //         return tokenAmount;
+    //     } else {
+    //         return 0;
+    //     }
+    // }
 
     function allowanceToUser(
         address _user,
@@ -544,45 +623,71 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         require(_priceForBusd > 0, "Invalid price rate");
         RoundInfo storage info = roundInfo[_index];
         info.priceForBusd = _priceForBusd;
-        info.priceForToken = 0;
+        // info.priceForToken = 0;
         info.startTime = _startTime;
         info.endTime = _endTime;
         info.lockMonths = _lockMonths;
         info.maxDexaAmountToSell = _maxDexaAmountToSell;
         info.busdEnabled = true;
-        info.tokenEnabled = false;
+        // info.tokenEnabled = false;
         info.minContributionForBusd = _minContributionForBusd;
-        info.minContributionForToken = 0;
+        // info.minContributionForToken = 0;
         info.maxContributionForBusd = _maxContributionForBusd;
-        info.maxContributionForToken = 0;
+        // info.maxContributionForToken = 0;
     }
 
-    function setRoundInfoForERC20(
+    function setRoundInfoForNtr(
         uint8 _index,
-        uint256 _priceForToken,
+        uint256 _priceForNtr,
         uint256 _startTime,
         uint256 _endTime,
         uint8 _lockMonths,
         uint256 _maxDexaAmountToSell,
-        uint256 _minContributionForToken,
-        uint256 _maxContributionForToken
+        uint256 _minContributionForNtr,
+        uint256 _maxContributionForNtr
     ) external override onlyOwner {
         require(_lockMonths > 0 && _lockMonths < 36, "Invalid Lock period");
-        require(_priceForToken > 0, "Invalid price rate");
+        require(_priceForNtr > 0, "Invalid price rate");
         RoundInfo storage info = roundInfo[_index];
-        info.priceForBusd = 0;
-        info.priceForToken = _priceForToken;
+        // info.priceForBusd = _priceForBusd;
+        info.priceForNtr = _priceForNtr;
         info.startTime = _startTime;
         info.endTime = _endTime;
         info.lockMonths = _lockMonths;
         info.maxDexaAmountToSell = _maxDexaAmountToSell;
-        info.busdEnabled = false;
-        info.tokenEnabled = true;
-        info.minContributionForBusd = 0;
-        info.minContributionForToken = _minContributionForToken;
-        info.maxContributionForBusd = 0;
-        info.maxContributionForToken = _maxContributionForToken;
+        info.ntrEnabled = true;
+        info.minContributionForNtr = _minContributionForNtr;
+        // info.minContributionForToken = 0;
+        info.maxContributionForNtr = _maxContributionForNtr;
+        // info.maxContributionForToken = 0;
     }
+
+    // function setRoundInfoForERC20(
+    //     uint8 _index,
+    //     uint256 _priceForToken,
+    //     uint256 _startTime,
+    //     uint256 _endTime,
+    //     uint8 _lockMonths,
+    //     uint256 _maxDexaAmountToSell,
+    //     uint256 _minContributionForToken,
+    //     uint256 _maxContributionForToken
+    // ) external override onlyOwner {
+    //     require(_lockMonths > 0 && _lockMonths < 36, "Invalid Lock period");
+    //     require(_priceForToken > 0, "Invalid price rate");
+    //     RoundInfo storage info = roundInfo[_index];
+    //     info.priceForBusd = 0;
+    //     info.priceForToken = _priceForToken;
+    //     info.startTime = _startTime;
+    //     info.endTime = _endTime;
+    //     info.lockMonths = _lockMonths;
+    //     info.maxDexaAmountToSell = _maxDexaAmountToSell;
+    //     info.busdEnabled = false;
+    //     info.tokenEnabled = true;
+    //     info.minContributionForBusd = 0;
+    //     info.minContributionForToken = _minContributionForToken;
+    //     info.maxContributionForBusd = 0;
+    //     info.maxContributionForToken = _maxContributionForToken;
+    // }
 
     function withdrawBusdForCoreTeam() external override onlyOwner {
         int8 _round = getRound();
@@ -744,7 +849,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         uint256 dexaAmount;
         if (_isBusd) {
             dexaAmount = (info.busdRaised * 1e18) / info.priceForBusd;
-        } else dexaAmount = (info.tokenRaised * 1e18) / info.priceForToken;
+        } else dexaAmount = (info.ntrRaised * 1e18) / info.priceForNtr;
 
         if (dexaAmount > info.maxDexaAmountToSell) return true;
         else return false;
