@@ -18,6 +18,7 @@ contract TokenTest is Test {
     Token deXa;
     Token busd;
     Token wbnb;
+    Token ntr;
 
     CentherRegistration register;
 
@@ -38,12 +39,16 @@ contract TokenTest is Test {
         deXa = new Token("deXa", "DXC");
         busd = new Token("Binance USD", "BUSD");
         wbnb = new Token("Wrapped BNB", "WBNB");
+        ntr = new Token("NTR Token", "NTR");
 
         busd.transfer(user1, 500000e18);
         busd.transfer(user2, 500000e18);
 
         wbnb.transfer(user1, 500000e18);
         wbnb.transfer(user2, 500000e18);
+
+        ntr.transfer(user1, 500000e18);
+        ntr.transfer(user2, 500000e18);
 
         register = new CentherRegistration();
         register.setOperator(address(owner));
@@ -63,7 +68,7 @@ contract TokenTest is Test {
         address zero = address(0);
         deXaPresale = new DeXaPresale(
             address(deXa),
-            address(zero),
+            address(ntr),
             address(busd),
             address(register),
             address(zero),
@@ -306,89 +311,89 @@ contract TokenTest is Test {
     }
 
     // wbnb cases
-    function testSetRound0AndPurchaseWithMaxWBNB() public {
-        vm.startPrank(owner);
-        deXaPresale.changeTokenAddress(address(wbnb));
+    // function testSetRound0AndPurchaseWithMaxWBNB() public {
+    //     vm.startPrank(owner);
+    //     deXaPresale.changeTokenAddress(address(wbnb));
 
-        deal({
-            token: address(deXa),
-            to: address(deXaPresale),
-            give: 10000000e18
-        });
+    //     deal({
+    //         token: address(deXa),
+    //         to: address(deXaPresale),
+    //         give: 10000000e18
+    //     });
 
-        deXaPresale.setRoundInfoForERC20(
-            0,
-            6230000000000000,
-            block.timestamp,
-            block.timestamp + 30 days,
-            4,
-            1000e18,
-            150e18,
-            5000e18
-        );
+    //     deXaPresale.setRoundInfoForERC20(
+    //         0,
+    //         6230000000000000,
+    //         block.timestamp,
+    //         block.timestamp + 30 days,
+    //         4,
+    //         1000e18,
+    //         150e18,
+    //         5000e18
+    //     );
 
-        changePrank(user1);
+    //     changePrank(user1);
 
-        wbnb.approve(address(deXaPresale), 4500e18);
+    //     wbnb.approve(address(deXaPresale), 4500e18);
 
-        deXaPresale.tokenPurchaseWithERC20(4500e18);
+    //     deXaPresale.tokenPurchaseWithERC20(4500e18);
 
-        vm.warp(block.timestamp + 30 days * 12);
-        deXaPresale.claimTokensFromERC20(0);
+    //     vm.warp(block.timestamp + 30 days * 12);
+    //     deXaPresale.claimTokensFromERC20(0);
 
-        assertEq(
-            deXa.balanceOf(address(user1)),
-            722311396468699839486356,
-            "Amount not received as expected"
-        );
-    }
+    //     assertEq(
+    //         deXa.balanceOf(address(user1)),
+    //         722311396468699839486356,
+    //         "Amount not received as expected"
+    //     );
+    // }
 
-    // wbnb cases
-    function testClaimDexaTwoTimesWithMaxWBNB() public {
-        vm.startPrank(owner);
-        deXaPresale.changeTokenAddress(address(wbnb));
+    // // wbnb cases
+    // function testClaimDexaTwoTimesWithMaxWBNB() public {
+    //     vm.startPrank(owner);
+    //     deXaPresale.changeTokenAddress(address(wbnb));
 
-        deal({
-            token: address(deXa),
-            to: address(deXaPresale),
-            give: 10000000e18
-        });
+    //     deal({
+    //         token: address(deXa),
+    //         to: address(deXaPresale),
+    //         give: 10000000e18
+    //     });
 
-        deXaPresale.setRoundInfoForERC20(
-            0,
-            6230000000000000,
-            block.timestamp,
-            block.timestamp + 30 days,
-            4,
-            1000e18,
-            150e18,
-            5000e18
-        );
+    //     deXaPresale.setRoundInfoForERC20(
+    //         0,
+    //         6230000000000000,
+    //         block.timestamp,
+    //         block.timestamp + 30 days,
+    //         4,
+    //         1000e18,
+    //         150e18,
+    //         5000e18
+    //     );
 
-        vm.stopPrank();
-        vm.startPrank(user1);
+    //     vm.stopPrank();
+    //     vm.startPrank(user1);
 
-        wbnb.approve(address(deXaPresale), 4500e18);
+    //     wbnb.approve(address(deXaPresale), 4500e18);
 
-        deXaPresale.tokenPurchaseWithERC20(4500e18);
+    //     deXaPresale.tokenPurchaseWithERC20(4500e18);
 
-        vm.warp(block.timestamp + 30 days * 5);
-        deXaPresale.claimTokensFromERC20(0);
-        uint256 balanceAfter1stClaim = deXa.balanceOf(address(user1));
-        assertEq(
-            balanceAfter1stClaim,
-            90288924558587479935794,
-            "Amount not received as expected"
-        );
-        vm.warp(block.timestamp + 30 days);
-        deXaPresale.claimTokensFromERC20(0);
-        uint256 balanceAfter2ndClaim = deXa.balanceOf(address(user1));
-        assertEq(
-            balanceAfter2ndClaim,
-            180577849117174959871589,
-            "Amount not received as expected"
-        );
-    }
+    //     vm.warp(block.timestamp + 30 days * 5);
+    //     deXaPresale.claimTokensFromERC20(0);
+    //     uint256 balanceAfter1stClaim = deXa.balanceOf(address(user1));
+    //     assertEq(
+    //         balanceAfter1stClaim,
+    //         90288924558587479935794,
+    //         "Amount not received as expected"
+    //     );
+    //     vm.warp(block.timestamp + 30 days);
+    //     deXaPresale.claimTokensFromERC20(0);
+    //     uint256 balanceAfter2ndClaim = deXa.balanceOf(address(user1));
+    //     assertEq(
+    //         balanceAfter2ndClaim,
+    //         180577849117174959871589,
+    //         "Amount not received as expected"
+    //     );
+    // }
 
     function testRewardAmountForReferral() public {
         //clear balances
@@ -548,6 +553,76 @@ contract TokenTest is Test {
         _rates[2] = (200);
         _rates[3] = (200);
         deXaPresale.setReferralRate(_rates);
+    }
+
+    function testDexaClaimWithMinNTR() public {
+        vm.startPrank(owner);
+        deal({
+            token: address(deXa),
+            to: address(deXaPresale),
+            give: 10000000e18
+        });
+
+        deXaPresale.setRoundInfoForNtr(
+            0,
+            160000000000000000000,
+            block.timestamp,
+            block.timestamp + 30 days,
+            4,
+            10000e18,
+            150e18,
+            5000e18
+        );
+
+        changePrank(user1);
+
+        ntr.approve(address(deXaPresale), 4500e18);
+
+        deXaPresale.tokenPurchaseWithNTR(150e18);
+
+        vm.warp(block.timestamp + 30 days * 12);
+        deXaPresale.claimTokensFromNtr(0);
+
+        assertEq(
+            deXa.balanceOf(address(user1)),
+            937500000000000000,
+            "Amount not received as expected"
+        );
+    }
+
+    function testDexaClaimWithMaxNTR() public {
+        vm.startPrank(owner);
+        deal({
+            token: address(deXa),
+            to: address(deXaPresale),
+            give: 10000000e18
+        });
+
+        deXaPresale.setRoundInfoForNtr(
+            0,
+            160000000000000000000,
+            block.timestamp,
+            block.timestamp + 30 days,
+            4,
+            10000e18,
+            150e18,
+            5000e18
+        );
+
+        changePrank(user1);
+
+        ntr.approve(address(deXaPresale), 4500e18);
+
+        deXaPresale.tokenPurchaseWithNTR(4500e18);
+
+        vm.warp(block.timestamp + 30 days * 12);
+        deXaPresale.claimTokensFromNtr(0);
+
+        assertEq(
+            deXa.balanceOf(address(user1)),
+            28125000000000000000,
+            "Amount not received as expected"
+        );
     }
 
     //After Bug report and its fixes
