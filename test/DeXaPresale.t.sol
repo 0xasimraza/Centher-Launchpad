@@ -717,38 +717,42 @@ contract TokenTest is Test {
         deXaPresale.claimTokensFromBusd(0);
     }
 
-    // function testFuzz(uint256 _amounts, uint256 _months) public {
-    //     vm.assume(_amounts != 0 && _amounts > 100e18);
-    //     vm.assume(_amounts < busd.balanceOf(user1));
+    function testFuzzClaimDXC (uint256 _months, uint256 _amounts) public {
+        vm.assume(_amounts > 1e18 && _amounts < busd.balanceOf(user1));
+        vm.assume(_amounts != 0);
 
-    //     vm.assume(_months != 0);
-    //     vm.assume(_months < 8);
+        vm.assume(_months < 9);
+        vm.assume(_months != 0);
 
-    //     vm.startPrank(owner);
-    //     deal({
-    //         token: address(deXa),
-    //         to: address(deXaPresale),
-    //         give: 50000000e18
-    //     });
+        vm.startPrank(owner);
+        deal({
+            token: address(deXa),
+            to: address(deXaPresale),
+            give: 50000000e18
+        });
 
-    //     deXaPresale.setRoundInfoForBusd(
-    //         0,
-    //         800000000000000000,
-    //         block.timestamp,
-    //         block.timestamp + 2 weeks,
-    //         4,
-    //         50000000e18,
-    //         _amounts,
-    //         busd.balanceOf(user1)
-    //     );
+        deXaPresale.setRoundInfoForBusd(
+            0,
+            800000000000000000,
+            block.timestamp,
+            block.timestamp + 2 weeks,
+            4,
+            50000000e18,
+            _amounts,
+            busd.balanceOf(user1)
+        );
 
-    //     vm.startPrank(user1);
-    //     busd.approve(address(deXaPresale), _amounts);
-    //     deXaPresale.tokenPurchaseWithBUSD(_amounts);
-    //     vm.warp(block.timestamp + 30 days * 4);
-    //     vm.warp(block.timestamp + 30 days * _months);
-    //     deXaPresale.claimTokensFromBusd(0);
-    // }
+        vm.startPrank(user1);
+        busd.approve(address(deXaPresale), _amounts);
+        deXaPresale.tokenPurchaseWithBUSD(_amounts);
+        vm.warp(block.timestamp + 30 days * 4);
+        vm.warp(block.timestamp + 30 days * _months);
+
+        uint256 balance = deXaPresale.getClaimableTokenAmountFromBusd(0, user1);
+
+        deXaPresale.claimTokensFromBusd(0);
+        assertEq(deXa.balanceOf(user1), balance, "Not Equal");
+    }
 
     function testThreeRoundsPuchaseWithBusdAndNtrWithReferrals() public {
         vm.startPrank(owner);
