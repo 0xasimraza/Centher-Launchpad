@@ -5,12 +5,6 @@ interface IDeXaPresale {
     error InvalidInputValue();
     error InvalidInputLength();
 
-    event TokenPurchaseWithERC20(
-        address indexed beneficiary,
-        uint8 round,
-        uint256 tokenAmount,
-        uint256 tokenAmountForOwner
-    );
     event TokenPurchaseWithBUSD(
         address indexed beneficiary,
         uint8 round,
@@ -126,11 +120,7 @@ interface IDeXaPresale {
 
     function withdrawBusdForCoreTeam() external;
 
-    function withdrawTokenForCoreTeam() external;
-
     function withdrawBUSD() external;
-
-    function withdrawToken() external;
 
     function withdrawDexa() external;
 
@@ -141,8 +131,6 @@ interface IDeXaPresale {
     function changeRegisterAddress(address _register) external;
 
     function changeDexaAddress(address _deXa) external;
-
-    function changeTokenAddress(address _token) external;
 
     function changeCoreTeamAddress(address _coreTeamAddress) external;
 

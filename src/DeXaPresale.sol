@@ -7,7 +7,14 @@ import "./interfaces/IRegistration.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "forge-std/console2.sol";
+
+// import "@openzeppelinUpgradeable/contracts/access/OwnableUpgradeable.sol";
+// import "@openzeppelinUpgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
+// contract DeXaPresale is
+//     OwnableUpgradeable,
+//     ReentrancyGuardUpgradeable,
+//     IDeXaPresale
+// {
 
 contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     uint8 public constant referralDeep = 6;
@@ -19,7 +26,6 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     address public coreTeamAddress;
     address public companyAddress;
 
-    address public token;
     address public busd;
     address public ntr;
     address public register;
@@ -49,6 +55,26 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         );
         _;
     }
+
+    // function initialize(
+    //     address _deXa,
+    //     address _ntr,
+    //     address _busd,
+    //     address _register,
+    //     address _coreTeam,
+    //     address _company
+    // ) public initializer {
+    //     __Ownable_init();
+    //     __ReentrancyGuard_init();
+    //     deXa = _deXa;
+    //     ntr = _ntr;
+    //     busd = _busd;
+    //     register = _register;
+    //     coreTeamAddress = _coreTeam;
+    //     companyAddress = _company;
+    //     percentForCoreTeam = 1000;
+    //     releaseMonth = 8;
+    // }
 
     constructor(
         address _deXa,
@@ -535,18 +561,6 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         IERC20(busd).transfer(coreTeamAddress, amount);
     }
 
-    function withdrawTokenForCoreTeam() external override onlyOwner {
-        int8 _round = getRound();
-        if (
-            (_round == 0 || _round == 1 || _round == 2) &&
-            hasSoldOut(uint8(_round), false)
-        ) {} else require(_hasEnded(), "Round is not over");
-        require(tokenAmountForCoreTeam > 0, "Nothing to claim.");
-        uint256 amount = tokenAmountForCoreTeam;
-        tokenAmountForCoreTeam = 0;
-        IERC20(token).transfer(coreTeamAddress, amount);
-    }
-
     function withdrawBUSD() external override onlyOwner {
         int8 _round = getRound();
         if (
@@ -556,18 +570,6 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         uint256 amount = busdAmountForOwner;
         busdAmountForOwner = 0;
         IERC20(busd).transfer(companyAddress, amount);
-    }
-
-    function withdrawToken() external override onlyOwner {
-        int8 _round = getRound();
-        if (
-            (_round == 0 || _round == 1 || _round == 2) &&
-            hasSoldOut(uint8(_round), false)
-        ) {} else require(_hasEnded(), "Round is not over");
-        require(tokenAmountForOwner > 0, "Nothing to claim.");
-        uint256 amount = tokenAmountForOwner;
-        tokenAmountForOwner = 0;
-        IERC20(token).transfer(companyAddress, amount);
     }
 
     function withdrawDexa() external override onlyOwner {
@@ -599,11 +601,6 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     function changeDexaAddress(address _deXa) external override onlyOwner {
         emit DexaContractUpdated(deXa, _deXa);
         deXa = _deXa;
-    }
-
-    function changeTokenAddress(address _token) external override onlyOwner {
-        emit ERC20ContractUpdated(token, _token);
-        token = _token;
     }
 
     function changeCoreTeamAddress(
