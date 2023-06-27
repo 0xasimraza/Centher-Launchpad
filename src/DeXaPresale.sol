@@ -616,8 +616,8 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     function changeCompanyAddress(
         address _newAddress
     ) external override onlyOwner {
-        emit CompanyAccountUpdated(companyAddress, _newAddress);
         companyAddress = _newAddress;
+        emit CompanyAccountUpdated(companyAddress, _newAddress);
     }
 
     function depositBusdForReward(
