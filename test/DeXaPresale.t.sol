@@ -717,7 +717,10 @@ contract TokenTest is Test {
         deXaPresale.claimTokensFromBusd(0);
     }
 
-    function testFuzzClaimDXC (uint256 _months, uint256 _amounts) public {
+    function testFuzzClaimDXCWithMonths(
+        uint256 _months,
+        uint256 _amounts
+    ) public {
         vm.assume(_amounts > 1e18 && _amounts < busd.balanceOf(user1));
         vm.assume(_amounts != 0);
 
@@ -752,6 +755,45 @@ contract TokenTest is Test {
 
         deXaPresale.claimTokensFromBusd(0);
         assertEq(deXa.balanceOf(user1), balance, "Not Equal");
+    }
+
+    function testFuzzClaimDXC(uint256 _amounts) public {
+        vm.assume(_amounts > 10e18 && _amounts < 40000000e18);
+        vm.assume(_amounts != 0);
+
+        vm.startPrank(owner);
+        deal({
+            token: address(deXa),
+            to: address(deXaPresale),
+            give: type(uint256).max
+        });
+
+        deal({
+            token: address(busd),
+            to: address(user1),
+            give: type(uint256).max
+        });
+
+        deXaPresale.setRoundInfoForBusd(
+            0,
+            800000000000000000,
+            block.timestamp,
+            block.timestamp + 2 weeks,
+            4,
+            50000000e18,
+            _amounts,
+            type(uint256).max
+        );
+
+        vm.startPrank(user1);
+        busd.approve(address(deXaPresale), _amounts);
+        deXaPresale.tokenPurchaseWithBUSD(_amounts);
+
+        vm.warp(block.timestamp + 30 days * 12);
+
+        uint256 totalClaimableAmount = _amounts * 1e18 / 800000000000000000;
+        deXaPresale.claimTokensFromBusd(0);
+        assertEq(deXa.balanceOf(user1), totalClaimableAmount, "Not Equal");
     }
 
     function testThreeRoundsPuchaseWithBusdAndNtrWithReferrals() public {
