@@ -791,7 +791,7 @@ contract TokenTest is Test {
 
         vm.warp(block.timestamp + 30 days * 12);
 
-        uint256 totalClaimableAmount = _amounts * 1e18 / 800000000000000000;
+        uint256 totalClaimableAmount = (_amounts * 1e18) / 800000000000000000;
         deXaPresale.claimTokensFromBusd(0);
         assertEq(deXa.balanceOf(user1), totalClaimableAmount, "Not Equal");
     }
