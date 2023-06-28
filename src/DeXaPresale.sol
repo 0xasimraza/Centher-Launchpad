@@ -34,9 +34,8 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     uint256 private constant MONTH = 86400 * 30;
 
     uint256 private constant MULTIPLER = 10000;
-    uint256 public tokenAmountForCoreTeam;
+
     uint256 public busdAmountForCoreTeam;
-    uint256 public tokenAmountForOwner;
     uint256 public busdAmountForOwner;
     uint256 public percentForCoreTeam;
 
@@ -422,65 +421,65 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
             revert InvalidInputLength();
         }
         uint256 len = _users.length;
-        for (uint256 i = 0; i < len; i++) {
-            if (_users[i] == address(0) || _busdAmounts[i] < 0) {
+        for (uint256 x = 0; x < len; x++) {
+            if (_users[x] == address(0) || _busdAmounts[x] < 0) {
                 revert InvalidInputValue();
             }
             require(
-                _rounds[i] == 0 || _rounds[i] == 1 || _rounds[i] == 2,
+                _rounds[x] == 0 || _rounds[x] == 1 || _rounds[x] == 2,
                 "Not started any Round."
             );
 
-            RoundInfo storage info = roundInfo[uint8(_rounds[i])];
+            RoundInfo storage info = roundInfo[uint8(_rounds[x])];
             require(info.busdEnabled, "Not enable to purchase with BUSD");
 
             require(
-                _busdAmounts[i] >= info.minContributionForBusd,
+                _busdAmounts[x] >= info.minContributionForBusd,
                 "Min contribution criteria not met"
             );
             require(
-                _busdAmounts[i] <= info.maxContributionForBusd,
+                _busdAmounts[x] <= info.maxContributionForBusd,
                 "Max contribution criteria not met"
             );
 
-            require(!userDeposits[_users[i]], "Already Deposited");
-            userDeposits[_users[i]] = true;
-            // claimableTokens[_users[i]] += _busdAmounts[i];
+            require(!userDeposits[_users[x]], "Already Deposited");
+            userDeposits[_users[x]] = true;
 
-            info.busdRaised = info.busdRaised + _busdAmounts[i];
+            info.busdRaised = info.busdRaised + _busdAmounts[x];
             require(
-                !hasSoldOut(uint8(_rounds[i]), true),
+                !hasSoldOut(uint8(_rounds[x]), true),
                 "Dexa is already sold out!"
             );
 
-            info.contributions[_users[i]].contributedBusdAmount += _busdAmounts[
-                i
+            info.contributions[_users[x]].contributedBusdAmount += _busdAmounts[
+                x
             ];
             if (info.contributions[msg.sender].purchaseTimeForBusd == 0) {
                 info.contributions[msg.sender].purchaseTimeForBusd = block
                     .timestamp;
             }
 
-            uint256 busdForCoreTeam = (_busdAmounts[i] * percentForCoreTeam) /
+            uint256 busdForCoreTeam = (_busdAmounts[x] * percentForCoreTeam) /
                 MULTIPLER;
 
             busdAmountForCoreTeam += busdForCoreTeam;
 
-            uint256 busdForOwner = _busdAmounts[i] - busdForCoreTeam;
+            uint256 busdForOwner = _busdAmounts[x] - busdForCoreTeam;
 
-            uint256 tokenAmount = (_busdAmounts[i] * 1e18) / info.priceForBusd;
+            uint256 tokenAmount = (_busdAmounts[x] * 1e18) / info.priceForBusd;
 
             info
-                .contributions[_users[i]]
+                .contributions[_users[x]]
                 .totalClaimableTokenAmountForBusd += tokenAmount;
 
             address[] memory referrers = IRegistration(register)
-                .getReferrerAddresses(_users[i]);
+                .getReferrerAddresses(_users[x]);
+
             for (uint8 i = 0; i < referralDeep; i++) {
                 if (referrers[i] == address(0)) {
                     break;
                 }
-                uint256 bonus = (_busdAmounts[i] * referralRate[i]) / MULTIPLER;
+                uint256 bonus = (_busdAmounts[x] * referralRate[i]) / MULTIPLER;
                 require(
                     bonus <= busdBalanceForReward,
                     "Not enough funds for reward"
@@ -493,9 +492,9 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
                 IERC20(busd).transfer(referrers[i], bonus);
                 emit SetRefRewardBUSD(
                     referrers[i],
-                    _users[i],
+                    _users[x],
                     uint8(i + 1),
-                    uint8(_rounds[i]),
+                    uint8(_rounds[x]),
                     bonus
                 );
             }
@@ -503,9 +502,9 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
             busdAmountForOwner += busdForOwner;
 
             emit TokenPurchaseWithBUSD(
-                _users[i],
-                uint8(_rounds[i]),
-                _busdAmounts[i],
+                _users[x],
+                uint8(_rounds[x]),
+                _busdAmounts[x],
                 busdForOwner
             );
         }
