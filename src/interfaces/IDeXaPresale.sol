@@ -23,15 +23,8 @@ interface IDeXaPresale {
         uint256 tokenAmount
     );
     event RefRewardClaimBUSD(address indexed referrer, uint256 amount);
-    event RefRewardClaimToken(address indexed referrer, uint256 amount);
+
     event SetRefRewardBUSD(
-        address indexed referrer,
-        address indexed user,
-        uint8 level,
-        uint8 round,
-        uint256 amount
-    );
-    event SetRefRewardToken(
         address indexed referrer,
         address indexed user,
         uint8 level,
@@ -43,7 +36,6 @@ interface IDeXaPresale {
     event ReleaseMonthsUpdated(uint32 releaseMonth, uint32 _releaseMonths);
     event RegistrationContractUpdated(address register, address _register);
     event DexaContractUpdated(address deXa, address _deXa);
-    event ERC20ContractUpdated(address oldToken, address newToken);
     event CoreTeamAccountUpdated(
         address oldCoreTeamAddress,
         address newCoreTeamAddress
