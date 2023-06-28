@@ -354,7 +354,6 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         );
         require(!userDeposits[_user], "Already Deposited");
         userDeposits[_user] = true;
-        // claimableTokens[_user] += _busdAmount;
 
         info.busdRaised = info.busdRaised + _busdAmount;
         require(!hasSoldOut(uint8(_round), true), "Dexa is already sold out!");
