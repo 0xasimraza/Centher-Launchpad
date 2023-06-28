@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 
 import "../src/DeXaPresale.sol";
+import "../src/interfaces/IDeXaPresale.sol";
 import "../src/utils/Token.sol";
 import "../src/utils/CentherRegistration.sol";
 
@@ -794,6 +795,63 @@ contract TokenTest is Test {
         uint256 totalClaimableAmount = (_amounts * 1e18) / 800000000000000000;
         deXaPresale.claimTokensFromBusd(0);
         assertEq(deXa.balanceOf(user1), totalClaimableAmount, "Not Equal");
+    }
+
+    function testFuzzClaimDXCThroughOwnerAllowance(uint256 _amounts) public {
+        vm.assume(_amounts > 10e18 && _amounts < 40000000e18);
+        vm.assume(_amounts != 0);
+
+        vm.startPrank(owner);
+        deal({
+            token: address(deXa),
+            to: address(deXaPresale),
+            give: type(uint256).max
+        });
+
+        deal({
+            token: address(busd),
+            to: address(user1),
+            give: type(uint256).max
+        });
+
+        deXaPresale.setRoundInfoForBusd(
+            0,
+            800000000000000000,
+            block.timestamp,
+            block.timestamp + 2 weeks,
+            4,
+            100000000e18,
+            _amounts,
+            type(uint256).max
+        );
+
+        vm.startPrank(owner);
+        busd.approve(address(deXaPresale), _amounts);
+        deXaPresale.depositBusdForReward(_amounts);
+
+        address[] memory _users = new address[](2);
+        _users[0] = address(user1);
+        _users[1] = address(user2);
+
+        uint256[] memory _allowances = new uint256[](2);
+        _allowances[0] = uint256(_amounts);
+        _allowances[1] = uint256(_amounts);
+
+        uint256[] memory _rounds = new uint256[](2);
+        _rounds[0] = 0;
+        _rounds[1] = 0;
+
+        deXaPresale.batchAllowanceToUsers(_users, _allowances, _rounds);
+
+        vm.warp(block.timestamp + 30 days * 12);
+        uint256 totalClaimableAmount = (_amounts * 1e18) / 800000000000000000;
+        changePrank(user1);
+        deXaPresale.claimTokensFromBusd(0);
+        assertEq(deXa.balanceOf(user1), totalClaimableAmount, "Not Equal");
+
+        changePrank(user2);
+        deXaPresale.claimTokensFromBusd(0);
+        assertEq(deXa.balanceOf(user2), totalClaimableAmount, "Not Equal");
     }
 
     function testThreeRoundsPuchaseWithBusdAndNtrWithReferrals() public {
