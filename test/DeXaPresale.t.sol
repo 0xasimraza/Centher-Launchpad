@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 
 import "../src/DeXaPresale.sol";
-import "../src/interfaces/IDeXaPresale.sol";
 import "../src/utils/Token.sol";
 import "../src/utils/CentherRegistration.sol";
 
