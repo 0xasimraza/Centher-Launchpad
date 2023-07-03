@@ -101,7 +101,7 @@ contract LaunchpadTest is Test {
             150e18,
             1000e18
         );
-        deXaPresale.allowanceToUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
     }
 
     function testclaimTokensFromBusd() public {
@@ -123,7 +123,7 @@ contract LaunchpadTest is Test {
         );
         busd.approve(address(deXaPresale), 1000e18);
         deXaPresale.depositBusdForReward(1000e18);
-        deXaPresale.allowanceToUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
         vm.warp(block.timestamp + 30 days);
 
         busd.transfer(user1, busd.balanceOf(owner));
@@ -699,7 +699,7 @@ contract LaunchpadTest is Test {
         );
         busd.approve(address(deXaPresale), 1000e18);
         deXaPresale.depositBusdForReward(1000e18);
-        deXaPresale.allowanceToUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
         vm.warp(block.timestamp + 30 days);
 
         busd.transfer(user1, busd.balanceOf(owner));
@@ -730,7 +730,7 @@ contract LaunchpadTest is Test {
         );
         busd.approve(address(deXaPresale), 1000e18);
         deXaPresale.depositBusdForReward(1000e18);
-        deXaPresale.allowanceToUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
         // vm.warp(block.timestamp + 30 days);
 
         busd.transfer(user1, busd.balanceOf(owner));
@@ -787,7 +787,7 @@ contract LaunchpadTest is Test {
         );
         busd.approve(address(deXaPresale), 1000e18);
         deXaPresale.depositBusdForReward(1000e18);
-        deXaPresale.allowanceToUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
         vm.warp(block.timestamp + 30 days);
         busd.transfer(user1, busd.balanceOf(owner));
         deXaPresale.withdrawBusdForCoreTeam();
@@ -817,7 +817,7 @@ contract LaunchpadTest is Test {
         );
         busd.approve(address(deXaPresale), 1000e18);
         deXaPresale.depositBusdForReward(1000e18);
-        deXaPresale.allowanceToUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
         vm.warp(block.timestamp + 30 days);
         busd.transfer(user1, busd.balanceOf(owner));
         deXaPresale.withdrawBusdForCoreTeam();
@@ -990,8 +990,8 @@ contract LaunchpadTest is Test {
             150e18,
             1500e18
         );
-        deXaPresale.allowanceToUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
         vm.expectRevert("Already Deposited");
-        deXaPresale.allowanceToUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
     }
 }

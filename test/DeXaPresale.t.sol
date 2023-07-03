@@ -100,7 +100,7 @@ contract TokenTest is Test {
             1000e18
         );
 
-        deXaPresale.allowanceToUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
     }
 
     function testUsersAllowance() public {
@@ -134,7 +134,7 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
     }
 
     function testSetRound0AndPurchaseWithMinBUSD() public {
@@ -284,7 +284,7 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
 
         changePrank(user1);
 
@@ -357,7 +357,7 @@ contract TokenTest is Test {
             user2
         );
 
-        deXaPresale.batchAllowanceToUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
 
         // level1 amount check
         assertEq(
@@ -430,7 +430,7 @@ contract TokenTest is Test {
             user2
         );
 
-        deXaPresale.batchAllowanceToUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
 
         // level1 amount check
         assertEq(
@@ -596,10 +596,10 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
 
         vm.expectRevert("Already Deposited");
-        deXaPresale.batchAllowanceToUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
     }
 
     function testReinvestForUsersByOwner() public {
@@ -642,10 +642,10 @@ contract TokenTest is Test {
             150e18,
             1500e18
         );
-        deXaPresale.allowanceToUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
 
         vm.expectRevert("Already Deposited");
-        deXaPresale.allowanceToUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
     }
 
     function testSoldOutCheck() public {
@@ -840,7 +840,7 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
 
         vm.warp(block.timestamp + 30 days * 12);
         uint256 totalClaimableAmount = (_amounts * 1e18) / 800000000000000000;
