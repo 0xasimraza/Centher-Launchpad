@@ -132,15 +132,27 @@ interface IDeXaPresale {
 
     function withdrawBusdForReward(address _receiver) external;
 
-    function allowanceToUser(
+    function allowanceToBusdUser(
         address _user,
         uint256 _busdAmount,
         uint256 _round
     ) external;
 
-    function batchAllowanceToUsers(
+    function allowanceToNtrUser(
+        address _user,
+        uint256 _ntrAmount,
+        uint256 _round
+    ) external;
+
+    function batchAllowanceToBusdUsers(
         address[] calldata _user,
         uint256[] calldata _amount,
+        uint256[] memory _rounds
+    ) external;
+
+     function batchAllowanceToNtrUsers(
+        address[] memory _users,
+        uint256[] memory _busdAmounts,
         uint256[] memory _rounds
     ) external;
 }

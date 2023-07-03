@@ -327,7 +327,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         }
     }
 
-    function allowanceToUser(
+    function allowanceToBusdUser(
         address _user,
         uint256 _busdAmount,
         uint256 _round
@@ -411,12 +411,55 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         );
     }
 
-    function batchAllowanceToUsers(
+    function allowanceToNtrUser(
+        address _user,
+        uint256 _ntrAmount,
+        uint256 _round
+    ) external override onlyOwner {
+        require(
+            _round == 0 || _round == 1 || _round == 2,
+            "Not started any Round."
+        );
+
+        RoundInfo storage info = roundInfo[uint8(_round)];
+        require(info.ntrEnabled, "Not enable to purchase with NTR");
+
+        require(
+            _ntrAmount >= info.minContributionForNtr,
+            "Min contribution criteria not met"
+        );
+        require(
+            _ntrAmount <= info.maxContributionForNtr,
+            "Max contribution criteria not met"
+        );
+
+        info.ntrRaised = info.ntrRaised + _ntrAmount;
+
+        require(!hasSoldOut(uint8(_round), false), "Dexa is already sold out!");
+
+        info.contributions[msg.sender].contributedNtrAmount += _ntrAmount;
+        if (info.contributions[_user].purchaseTimeForNtr == 0) {
+            info.contributions[_user].purchaseTimeForNtr = block.timestamp;
+        }
+
+        uint256 tokenAmount = (_ntrAmount * 1e18) / info.priceForNtr;
+
+        info
+            .contributions[_user]
+            .totalClaimableTokenAmountForNtr += tokenAmount;
+
+        emit TokenPurchaseWithNTR(_user, uint8(_round), _ntrAmount, _ntrAmount);
+    }
+
+    function batchAllowanceToBusdUsers(
         address[] memory _users,
         uint256[] memory _busdAmounts,
         uint256[] memory _rounds
-    ) external onlyOwner {
-        if (_users.length != _busdAmounts.length) {
+    ) external override onlyOwner {
+        if (
+            _users.length != _busdAmounts.length &&
+            _users.length != _rounds.length
+        ) {
             revert InvalidInputLength();
         }
         uint256 len = _users.length;
@@ -505,6 +548,66 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
                 uint8(_rounds[x]),
                 _busdAmounts[x],
                 busdForOwner
+            );
+        }
+    }
+
+    function batchAllowanceToNtrUsers(
+        address[] memory _users,
+        uint256[] memory _ntrAmounts,
+        uint256[] memory _rounds
+    ) external override onlyOwner {
+        if (
+            _users.length != _ntrAmounts.length &&
+            _users.length != _rounds.length
+        ) {
+            revert InvalidInputLength();
+        }
+        uint256 len = _users.length;
+        for (uint256 x = 0; x < len; x++) {
+            require(
+                _rounds[x] == 0 || _rounds[x] == 1 || _rounds[x] == 2,
+                "Not started any Round."
+            );
+
+            RoundInfo storage info = roundInfo[uint8(_rounds[x])];
+            require(info.ntrEnabled, "Not enable to purchase with NTR");
+
+            require(
+                _ntrAmounts[x] >= info.minContributionForNtr,
+                "Min contribution criteria not met"
+            );
+            require(
+                _ntrAmounts[x] <= info.maxContributionForNtr,
+                "Max contribution criteria not met"
+            );
+
+            info.ntrRaised = info.ntrRaised + _ntrAmounts[x];
+
+            require(
+                !hasSoldOut(uint8(_rounds[x]), false),
+                "Dexa is already sold out!"
+            );
+
+            info.contributions[msg.sender].contributedNtrAmount += _ntrAmounts[
+                x
+            ];
+            if (info.contributions[_users[x]].purchaseTimeForNtr == 0) {
+                info.contributions[_users[x]].purchaseTimeForNtr = block
+                    .timestamp;
+            }
+
+            uint256 tokenAmount = (_ntrAmounts[x] * 1e18) / info.priceForNtr;
+
+            info
+                .contributions[_users[x]]
+                .totalClaimableTokenAmountForNtr += tokenAmount;
+
+            emit TokenPurchaseWithNTR(
+                _users[x],
+                uint8(_rounds[x]),
+                _ntrAmounts[x],
+                _ntrAmounts[x]
             );
         }
     }
