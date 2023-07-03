@@ -103,7 +103,7 @@ contract TokenTest is Test {
         deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
     }
 
-    function testUsersAllowance() public {
+    function testBusdUsersAllowance() public {
         vm.startPrank(owner);
 
         deal({
@@ -135,6 +135,80 @@ contract TokenTest is Test {
         _rounds[1] = 0;
 
         deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
+    }
+
+    function testNtrUsersAllowance() public {
+        vm.startPrank(owner);
+
+        deal({
+            token: address(deXa),
+            to: address(deXaPresale),
+            give: 50000000e18
+        });
+        deXaPresale.setRoundInfoForBusd(
+            0,
+            800000000000000000,
+            block.timestamp,
+            block.timestamp + 30 days,
+            1,
+            50000000e18,
+            5e18,
+            1000e18
+        );
+
+        deXaPresale.setRoundInfoForNtr(0, 160000000000000000000, 5e18, 5000e18);
+
+        address[] memory _users = new address[](2);
+        _users[0] = address(user1);
+        _users[1] = address(user2);
+
+        uint256[] memory _allowances = new uint256[](2);
+        _allowances[0] = uint256(100e18);
+        _allowances[1] = uint256(10e18);
+
+        uint256[] memory _rounds = new uint256[](2);
+        _rounds[0] = 0;
+        _rounds[1] = 0;
+
+        deXaPresale.batchAllowanceToNtrUsers(_users, _allowances, _rounds);
+    }
+
+    function testShoulFailedNtrAllowanceMultipleDeposits() public {
+        vm.startPrank(owner);
+
+        deal({
+            token: address(deXa),
+            to: address(deXaPresale),
+            give: 50000000e18
+        });
+        deXaPresale.setRoundInfoForBusd(
+            0,
+            800000000000000000,
+            block.timestamp,
+            block.timestamp + 30 days,
+            1,
+            50000000e18,
+            5e18,
+            1000e18
+        );
+
+        deXaPresale.setRoundInfoForNtr(0, 160000000000000000000, 5e18, 5000e18);
+
+        address[] memory _users = new address[](2);
+        _users[0] = address(user1);
+        _users[1] = address(user2);
+
+        uint256[] memory _allowances = new uint256[](2);
+        _allowances[0] = uint256(100e18);
+        _allowances[1] = uint256(10e18);
+
+        uint256[] memory _rounds = new uint256[](2);
+        _rounds[0] = 0;
+        _rounds[1] = 0;
+
+        deXaPresale.batchAllowanceToNtrUsers(_users, _allowances, _rounds);
+        vm.expectRevert("Already Deposited");
+        deXaPresale.batchAllowanceToNtrUsers(_users, _allowances, _rounds);
     }
 
     function testSetRound0AndPurchaseWithMinBUSD() public {
@@ -254,7 +328,7 @@ contract TokenTest is Test {
         );
     }
 
-    function testClaimTokens() public {
+    function testClaimDXCThroughBusd() public {
         vm.startPrank(owner);
         deal({
             token: address(deXa),
@@ -295,6 +369,66 @@ contract TokenTest is Test {
             deXa.balanceOf(user1),
             187500000000000000000,
             "Not received claimable amount"
+        );
+    }
+
+    function testClaimDXCThroughNtr() public {
+        vm.startPrank(owner);
+
+        deal({
+            token: address(deXa),
+            to: address(deXaPresale),
+            give: 50000000e18
+        });
+        deXaPresale.setRoundInfoForBusd(
+            0,
+            800000000000000000,
+            block.timestamp,
+            block.timestamp + 30 days,
+            1,
+            50000000e18,
+            5e18,
+            1000e18
+        );
+
+        deXaPresale.setRoundInfoForNtr(
+            0,
+            160000000000000000000,
+            5e18,
+            100000e18
+        );
+
+        address[] memory _users = new address[](2);
+        _users[0] = address(user1);
+        _users[1] = address(user2);
+
+        uint256[] memory _allowances = new uint256[](2);
+        _allowances[0] = uint256(100000e18);
+        _allowances[1] = uint256(1000e18);
+
+        uint256[] memory _rounds = new uint256[](2);
+        _rounds[0] = 0;
+        _rounds[1] = 0;
+
+        deXaPresale.batchAllowanceToNtrUsers(_users, _allowances, _rounds);
+
+        vm.warp(block.timestamp + 30 days * 12);
+        changePrank(user1);
+
+        deXaPresale.claimTokensFromNtr(0);
+
+        changePrank(user2);
+        deXaPresale.claimTokensFromNtr(0);
+
+        assertEq(
+            deXa.balanceOf(user1),
+            625000000000000000000,
+            "Not valid amount received"
+        );
+        assertEq(
+            deXa.balanceOf(user2),
+            6250000000000000000,
+            "Not valid amount received"
         );
     }
 

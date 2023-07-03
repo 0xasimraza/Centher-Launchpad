@@ -40,8 +40,8 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     uint256 public percentForCoreTeam;
 
     mapping(address => uint256) public refRewardByBUSD;
-    mapping(address => uint256) public refRewardByToken;
-    mapping(address => bool) public userDeposits;
+    mapping(address => bool) public userBusdDeposits;
+    mapping(address => bool) public userNtrDeposits;
 
     uint16[referralDeep] public referralRate;
 
@@ -352,8 +352,8 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
             _busdAmount <= info.maxContributionForBusd,
             "Max contribution criteria not met"
         );
-        require(!userDeposits[_user], "Already Deposited");
-        userDeposits[_user] = true;
+        require(!userBusdDeposits[_user], "Already Deposited");
+        userBusdDeposits[_user] = true;
 
         info.busdRaised = info.busdRaised + _busdAmount;
         require(!hasSoldOut(uint8(_round), true), "Dexa is already sold out!");
@@ -433,11 +433,14 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
             "Max contribution criteria not met"
         );
 
+        require(!userNtrDeposits[_user], "Already Deposited");
+        userNtrDeposits[_user] = true;
+
         info.ntrRaised = info.ntrRaised + _ntrAmount;
 
         require(!hasSoldOut(uint8(_round), false), "Dexa is already sold out!");
 
-        info.contributions[msg.sender].contributedNtrAmount += _ntrAmount;
+        info.contributions[_user].contributedNtrAmount += _ntrAmount;
         if (info.contributions[_user].purchaseTimeForNtr == 0) {
             info.contributions[_user].purchaseTimeForNtr = block.timestamp;
         }
@@ -484,8 +487,8 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
                 "Max contribution criteria not met"
             );
 
-            require(!userDeposits[_users[x]], "Already Deposited");
-            userDeposits[_users[x]] = true;
+            require(!userBusdDeposits[_users[x]], "Already Deposited");
+            userBusdDeposits[_users[x]] = true;
 
             info.busdRaised = info.busdRaised + _busdAmounts[x];
             require(
@@ -582,6 +585,9 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
                 "Max contribution criteria not met"
             );
 
+            require(!userNtrDeposits[_users[x]], "Already Deposited");
+            userNtrDeposits[_users[x]] = true;
+
             info.ntrRaised = info.ntrRaised + _ntrAmounts[x];
 
             require(
@@ -589,7 +595,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
                 "Dexa is already sold out!"
             );
 
-            info.contributions[msg.sender].contributedNtrAmount += _ntrAmounts[
+            info.contributions[_users[x]].contributedNtrAmount += _ntrAmounts[
                 x
             ];
             if (info.contributions[_users[x]].purchaseTimeForNtr == 0) {
