@@ -1,11 +1,12 @@
 import fs from "fs";
-import "@nomiclabs/hardhat-waffle";
+
 import "@typechain/hardhat";
 import "hardhat-preprocessor";
 import { HardhatUserConfig, task } from "hardhat/config";
 
+import "@nomicfoundation/hardhat-toolbox"
 import "@openzeppelin/hardhat-upgrades";
-import "@nomiclabs/hardhat-etherscan";
+// import "@nomiclabs/hardhat-etherscan";
 import { NetworkUserConfig } from "hardhat/types";
 
 import { config as dotenvConfig } from "dotenv";
