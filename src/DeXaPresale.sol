@@ -4,20 +4,13 @@ pragma solidity ^0.8.13;
 import "./interfaces/IDeXaPresale.sol";
 import "./interfaces/IRegistration.sol";
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-// import "@openzeppelinUpgradeable/contracts/access/OwnableUpgradeable.sol";
-// import "@openzeppelinUpgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
-// contract DeXaPresale is
-//     OwnableUpgradeable,
-//     ReentrancyGuardUpgradeable,
-//     IDeXaPresale
-// {
+import "@openzeppelinUpgradeable/contracts/access/OwnableUpgradeable.sol";
+import "@openzeppelinUpgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 
-contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
-    uint8 public constant referralDeep = 6;
+contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPresale {
+    uint8 public constant REFERRAL_DEEP = 6;
 
     uint32 public releaseMonth;
 
@@ -31,9 +24,9 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     address public register;
 
     uint256 public busdBalanceForReward;
-    uint256 private constant MONTH = 86400 * 30;
+    uint256 private constant _MONTH = 86400 * 30;
 
-    uint256 private constant MULTIPLER = 10000;
+    uint256 private constant _MULTIPLER = 10000;
 
     uint256 public busdAmountForCoreTeam;
     uint256 public busdAmountForOwner;
@@ -43,46 +36,25 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     mapping(address => bool) public userBusdDeposits;
     mapping(address => bool) public userNtrDeposits;
 
-    uint16[referralDeep] public referralRate;
+    uint16[REFERRAL_DEEP] public referralRate;
 
     RoundInfo[3] public roundInfo;
 
     modifier onlyRegisterUser() {
-        require(
-            IRegistration(register).isRegistered(msg.sender),
-            "No registered."
-        );
+        require(IRegistration(register).isRegistered(msg.sender), "No registered.");
         _;
     }
 
-    // function initialize(
-    //     address _deXa,
-    //     address _ntr,
-    //     address _busd,
-    //     address _register,
-    //     address _coreTeam,
-    //     address _company
-    // ) public initializer {
-    //     __Ownable_init();
-    //     __ReentrancyGuard_init();
-    //     deXa = _deXa;
-    //     ntr = _ntr;
-    //     busd = _busd;
-    //     register = _register;
-    //     coreTeamAddress = _coreTeam;
-    //     companyAddress = _company;
-    //     percentForCoreTeam = 1000;
-    //     releaseMonth = 8;
-    // }
-
-    constructor(
+    function initialize(
         address _deXa,
         address _ntr,
         address _busd,
         address _register,
         address _coreTeam,
         address _company
-    ) Ownable() {
+    ) public initializer {
+        __Ownable_init();
+        __ReentrancyGuard_init();
         deXa = _deXa;
         ntr = _ntr;
         busd = _busd;
@@ -90,29 +62,18 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         coreTeamAddress = _coreTeam;
         companyAddress = _company;
         percentForCoreTeam = 1000;
-        releaseMonth = 8;
+        releaseMonth = 10;
     }
 
-    function tokenPurchaseWithBUSD(
-        uint256 _busdAmount
-    ) external override onlyRegisterUser {
+    function tokenPurchaseWithBUSD(uint256 _busdAmount) external override onlyRegisterUser {
         int8 _round = getRound();
-        require(
-            _round == 0 || _round == 1 || _round == 2,
-            "Not started any Round."
-        );
+        require(_round == 0 || _round == 1 || _round == 2, "Not started any Round.");
 
         RoundInfo storage info = roundInfo[uint8(_round)];
         require(info.busdEnabled, "Not enable to purchase with BUSD");
 
-        require(
-            _busdAmount >= info.minContributionForBusd,
-            "Min contribution criteria not met"
-        );
-        require(
-            _busdAmount <= info.maxContributionForBusd,
-            "Max contribution criteria not met"
-        );
+        require(_busdAmount >= info.minContributionForBusd, "Min contribution criteria not met");
+        require(_busdAmount <= info.maxContributionForBusd, "Max contribution criteria not met");
 
         IERC20(busd).transferFrom(msg.sender, address(this), _busdAmount);
 
@@ -122,73 +83,55 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
 
         info.contributions[msg.sender].contributedBusdAmount += _busdAmount;
         if (info.contributions[msg.sender].purchaseTimeForBusd == 0) {
-            info.contributions[msg.sender].purchaseTimeForBusd = block
-                .timestamp;
+            info.contributions[msg.sender].purchaseTimeForBusd = block.timestamp;
         }
 
-        uint256 busdForCoreTeam = (_busdAmount * percentForCoreTeam) /
-            MULTIPLER;
+        uint256 busdForCoreTeam;
 
-        busdAmountForCoreTeam += busdForCoreTeam;
+        uint256 busdForOwner;
+        uint256 tokenAmount;
 
-        uint256 busdForOwner = _busdAmount - busdForCoreTeam;
+        unchecked {
+            busdForCoreTeam = (_busdAmount * percentForCoreTeam) / _MULTIPLER;
+            busdAmountForCoreTeam += busdForCoreTeam;
 
-        uint256 tokenAmount = (_busdAmount * 1e18) / info.priceForBusd;
+            busdForOwner = _busdAmount - busdForCoreTeam;
+            tokenAmount = (_busdAmount * 1e18) / info.priceForBusd;
+        }
 
-        info
-            .contributions[msg.sender]
-            .totalClaimableTokenAmountForBusd += tokenAmount;
+        info.contributions[msg.sender].totalClaimableTokenAmountForBusd += tokenAmount;
 
-        address[] memory referrers = IRegistration(register)
-            .getReferrerAddresses(msg.sender);
-        for (uint8 i = 0; i < referralDeep; i++) {
+        address[] memory referrers = IRegistration(register).getReferrerAddresses(msg.sender);
+        for (uint8 i = 0; i < REFERRAL_DEEP; i++) {
             if (referrers[i] == address(0)) {
                 break;
             }
-            uint256 bonus = (_busdAmount * referralRate[i]) / MULTIPLER;
-            refRewardByBUSD[referrers[i]] += bonus;
-            //send reward to reffers
-            busdForOwner -= bonus;
+            uint256 bonus;
+            unchecked {
+                bonus = (_busdAmount * referralRate[i]) / _MULTIPLER;
+                refRewardByBUSD[referrers[i]] += bonus;
+
+                busdForOwner -= bonus;
+            }
+
             IERC20(busd).transfer(referrers[i], bonus);
-            emit SetRefRewardBUSD(
-                referrers[i],
-                msg.sender,
-                uint8(i + 1),
-                uint8(_round),
-                bonus
-            );
+            emit SetRefRewardBUSD(referrers[i], msg.sender, uint8(i + 1), uint8(_round), bonus);
         }
 
         busdAmountForOwner += busdForOwner;
 
-        emit TokenPurchaseWithBUSD(
-            msg.sender,
-            uint8(_round),
-            _busdAmount,
-            busdForOwner
-        );
+        emit TokenPurchaseWithBUSD(msg.sender, uint8(_round), _busdAmount, busdForOwner);
     }
 
-    function tokenPurchaseWithNTR(
-        uint256 _ntrAmount
-    ) external override onlyRegisterUser {
+    function tokenPurchaseWithNTR(uint256 _ntrAmount) external override onlyRegisterUser {
         int8 _round = getRound();
-        require(
-            _round == 0 || _round == 1 || _round == 2,
-            "Not started any Round."
-        );
+        require(_round == 0 || _round == 1 || _round == 2, "Not started any Round.");
 
         RoundInfo storage info = roundInfo[uint8(_round)];
         require(info.ntrEnabled, "Not enable to purchase with NTR");
 
-        require(
-            _ntrAmount >= info.minContributionForNtr,
-            "Min contribution criteria not met"
-        );
-        require(
-            _ntrAmount <= info.maxContributionForNtr,
-            "Max contribution criteria not met"
-        );
+        require(_ntrAmount >= info.minContributionForNtr, "Min contribution criteria not met");
+        require(_ntrAmount <= info.maxContributionForNtr, "Max contribution criteria not met");
 
         IERC20(ntr).transferFrom(msg.sender, address(this), _ntrAmount);
 
@@ -200,39 +143,28 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         if (info.contributions[msg.sender].purchaseTimeForNtr == 0) {
             info.contributions[msg.sender].purchaseTimeForNtr = block.timestamp;
         }
+        uint256 tokenAmount;
+        unchecked {
+            tokenAmount = (_ntrAmount * 1e18) / info.priceForNtr;
 
-        uint256 tokenAmount = (_ntrAmount * 1e18) / info.priceForNtr;
+            info.contributions[msg.sender].totalClaimableTokenAmountForNtr += tokenAmount;
+        }
 
-        info
-            .contributions[msg.sender]
-            .totalClaimableTokenAmountForNtr += tokenAmount;
-
-        emit TokenPurchaseWithNTR(
-            msg.sender,
-            uint8(_round),
-            _ntrAmount,
-            _ntrAmount
-        );
+        emit TokenPurchaseWithNTR(msg.sender, uint8(_round), _ntrAmount, _ntrAmount);
     }
 
-    function claimTokensFromBusd(
-        uint8 _round
-    ) external nonReentrant onlyRegisterUser {
-        ContributionInfo storage cInfo = roundInfo[_round].contributions[
-            msg.sender
-        ];
+    function claimTokensFromBusd(uint8 _round) external nonReentrant onlyRegisterUser {
+        ContributionInfo storage cInfo = roundInfo[_round].contributions[msg.sender];
         require(cInfo.contributedBusdAmount > 0, "Nothing to claim");
 
-        require(
-            (block.timestamp - cInfo.purchaseTimeForBusd) / MONTH >=
-                roundInfo[_round].lockMonths,
-            "Locked"
-        );
+        bool isUnlockTime;
+        unchecked {
+            isUnlockTime = (block.timestamp - cInfo.purchaseTimeForBusd) / _MONTH >= roundInfo[_round].lockMonths;
+        }
 
-        uint256 tokenAmount = getClaimableTokenAmountFromBusd(
-            _round,
-            msg.sender
-        );
+        require(isUnlockTime, "Locked");
+
+        uint256 tokenAmount = getClaimableTokenAmountFromBusd(_round, msg.sender);
         cInfo.claimedTokenAmountForBusd += tokenAmount;
 
         cInfo.lastClaimedTimeForBusd = block.timestamp;
@@ -242,24 +174,18 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         emit TokenClaim(msg.sender, _round, tokenAmount);
     }
 
-    function claimTokensFromNtr(
-        uint8 _round
-    ) external override nonReentrant onlyRegisterUser {
-        ContributionInfo storage cInfo = roundInfo[_round].contributions[
-            msg.sender
-        ];
+    function claimTokensFromNtr(uint8 _round) external override nonReentrant onlyRegisterUser {
+        ContributionInfo storage cInfo = roundInfo[_round].contributions[msg.sender];
         require(cInfo.contributedNtrAmount > 0, "Nothing to claim");
 
-        require(
-            (block.timestamp - cInfo.purchaseTimeForNtr) / MONTH >=
-                roundInfo[_round].lockMonths,
-            "Locked"
-        );
+        bool isUnlockTime;
+        unchecked {
+            isUnlockTime = (block.timestamp - cInfo.purchaseTimeForNtr) / _MONTH >= roundInfo[_round].lockMonths;
+        }
 
-        uint256 tokenAmount = getClaimableTokenAmountFromNtr(
-            _round,
-            msg.sender
-        );
+        require(isUnlockTime, "Locked");
+
+        uint256 tokenAmount = getClaimableTokenAmountFromNtr(_round, msg.sender);
         cInfo.claimedTokenAmountForNtr += tokenAmount;
 
         cInfo.lastClaimedTimeForNtr = block.timestamp;
@@ -269,89 +195,18 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         emit TokenClaim(msg.sender, _round, tokenAmount);
     }
 
-    function getClaimableTokenAmountFromBusd(
-        uint8 _round,
-        address _user
-    ) public view returns (uint256) {
-        RoundInfo storage info = roundInfo[_round];
-        ContributionInfo memory contribution = info.contributions[_user];
-
-        if (
-            (block.timestamp - contribution.purchaseTimeForBusd) / MONTH >
-            info.lockMonths
-        ) {
-            uint256 months = (block.timestamp -
-                contribution.purchaseTimeForBusd) /
-                MONTH -
-                info.lockMonths;
-
-            if (months > releaseMonth) months = releaseMonth;
-
-            uint256 tokenAmount = (months *
-                contribution.totalClaimableTokenAmountForBusd) /
-                releaseMonth -
-                contribution.claimedTokenAmountForBusd;
-
-            return tokenAmount;
-        } else {
-            return 0;
-        }
-    }
-
-    function getClaimableTokenAmountFromNtr(
-        uint8 _round,
-        address _user
-    ) public view returns (uint256) {
-        RoundInfo storage info = roundInfo[_round];
-        ContributionInfo memory contribution = info.contributions[_user];
-
-        if (
-            (block.timestamp - contribution.purchaseTimeForNtr) / MONTH >
-            info.lockMonths
-        ) {
-            uint256 months = (block.timestamp -
-                contribution.purchaseTimeForNtr) /
-                MONTH -
-                info.lockMonths;
-
-            if (months > releaseMonth) months = releaseMonth;
-
-            uint256 tokenAmount = (months *
-                contribution.totalClaimableTokenAmountForNtr) /
-                releaseMonth -
-                contribution.claimedTokenAmountForNtr;
-
-            return tokenAmount;
-        } else {
-            return 0;
-        }
-    }
-
-    function allowanceToBusdUser(
-        address _user,
-        uint256 _busdAmount,
-        uint256 _round
-    ) external override onlyOwner {
+    function allowanceToBusdUser(address _user, uint256 _busdAmount, uint256 _round) external override onlyOwner {
         if (_user == address(0) || _busdAmount < 0) {
             revert InvalidInputValue();
         }
 
-        require(
-            _round == 0 || _round == 1 || _round == 2,
-            "Not started any Round."
-        );
+        require(_round == 0 || _round == 1 || _round == 2, "Not started any Round.");
 
         RoundInfo storage info = roundInfo[uint8(_round)];
         require(info.busdEnabled, "Not enable to purchase with BUSD");
 
-        require(
-            _busdAmount >= info.minContributionForBusd,
-            "Min contribution criteria not met"
-        );
-        require(
-            _busdAmount <= info.maxContributionForBusd,
-            "Max contribution criteria not met"
-        );
+        require(_busdAmount >= info.minContributionForBusd, "Min contribution criteria not met");
+        require(_busdAmount <= info.maxContributionForBusd, "Max contribution criteria not met");
         require(!userBusdDeposits[_user], "Already Deposited");
         userBusdDeposits[_user] = true;
 
@@ -363,75 +218,51 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
             info.contributions[_user].purchaseTimeForBusd = block.timestamp;
         }
 
-        uint256 busdForCoreTeam = (_busdAmount * percentForCoreTeam) /
-            MULTIPLER;
+        uint256 busdForCoreTeam;
+        uint256 busdForOwner;
+        uint256 tokenAmount;
 
-        busdAmountForCoreTeam += busdForCoreTeam;
+        unchecked {
+            busdForCoreTeam = (_busdAmount * percentForCoreTeam) / _MULTIPLER;
+            busdAmountForCoreTeam += busdForCoreTeam;
 
-        uint256 busdForOwner = _busdAmount - busdForCoreTeam;
+            busdForOwner = _busdAmount - busdForCoreTeam;
+            tokenAmount = (_busdAmount * 1e18) / info.priceForBusd;
+        }
 
-        uint256 tokenAmount = (_busdAmount * 1e18) / info.priceForBusd;
+        info.contributions[_user].totalClaimableTokenAmountForBusd += tokenAmount;
 
-        info
-            .contributions[_user]
-            .totalClaimableTokenAmountForBusd += tokenAmount;
-
-        address[] memory referrers = IRegistration(register)
-            .getReferrerAddresses(_user);
-        for (uint8 i = 0; i < referralDeep; i++) {
+        address[] memory referrers = IRegistration(register).getReferrerAddresses(_user);
+        for (uint8 i = 0; i < REFERRAL_DEEP; i++) {
             if (referrers[i] == address(0)) {
                 break;
             }
-            uint256 bonus = (_busdAmount * referralRate[i]) / MULTIPLER;
-            require(
-                bonus <= busdBalanceForReward,
-                "Not enough funds for reward"
-            );
+            uint256 bonus = (_busdAmount * referralRate[i]) / _MULTIPLER;
+            require(bonus <= busdBalanceForReward, "Not enough funds for reward");
 
-            refRewardByBUSD[referrers[i]] += bonus;
-            busdForOwner -= bonus;
-            busdBalanceForReward -= bonus;
+            unchecked {
+                refRewardByBUSD[referrers[i]] += bonus;
+                busdForOwner -= bonus;
+                busdBalanceForReward -= bonus;
+            }
+
             IERC20(busd).transfer(referrers[i], bonus);
-            emit SetRefRewardBUSD(
-                referrers[i],
-                _user,
-                uint8(i + 1),
-                uint8(_round),
-                bonus
-            );
+            emit SetRefRewardBUSD(referrers[i], _user, uint8(i + 1), uint8(_round), bonus);
         }
 
         busdAmountForOwner += busdForOwner;
 
-        emit TokenPurchaseWithBUSD(
-            _user,
-            uint8(_round),
-            _busdAmount,
-            busdForOwner
-        );
+        emit TokenPurchaseWithBUSD(_user, uint8(_round), _busdAmount, busdForOwner);
     }
 
-    function allowanceToNtrUser(
-        address _user,
-        uint256 _ntrAmount,
-        uint256 _round
-    ) external override onlyOwner {
-        require(
-            _round == 0 || _round == 1 || _round == 2,
-            "Not started any Round."
-        );
+    function allowanceToNtrUser(address _user, uint256 _ntrAmount, uint256 _round) external override onlyOwner {
+        require(_round == 0 || _round == 1 || _round == 2, "Not started any Round.");
 
         RoundInfo storage info = roundInfo[uint8(_round)];
         require(info.ntrEnabled, "Not enable to purchase with NTR");
 
-        require(
-            _ntrAmount >= info.minContributionForNtr,
-            "Min contribution criteria not met"
-        );
-        require(
-            _ntrAmount <= info.maxContributionForNtr,
-            "Max contribution criteria not met"
-        );
+        require(_ntrAmount >= info.minContributionForNtr, "Min contribution criteria not met");
+        require(_ntrAmount <= info.maxContributionForNtr, "Max contribution criteria not met");
 
         require(!userNtrDeposits[_user], "Already Deposited");
         userNtrDeposits[_user] = true;
@@ -445,24 +276,21 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
             info.contributions[_user].purchaseTimeForNtr = block.timestamp;
         }
 
-        uint256 tokenAmount = (_ntrAmount * 1e18) / info.priceForNtr;
+        uint256 tokenAmount;
 
-        info
-            .contributions[_user]
-            .totalClaimableTokenAmountForNtr += tokenAmount;
-
+        unchecked {
+            tokenAmount = (_ntrAmount * 1e18) / info.priceForNtr;
+            info.contributions[_user].totalClaimableTokenAmountForNtr += tokenAmount;
+        }
         emit TokenPurchaseWithNTR(_user, uint8(_round), _ntrAmount, _ntrAmount);
     }
 
-    function batchAllowanceToBusdUsers(
-        address[] memory _users,
-        uint256[] memory _busdAmounts,
-        uint256[] memory _rounds
-    ) external override onlyOwner {
-        if (
-            _users.length != _busdAmounts.length &&
-            _users.length != _rounds.length
-        ) {
+    function batchAllowanceToBusdUsers(address[] memory _users, uint256[] memory _busdAmounts, uint256[] memory _rounds)
+        external
+        override
+        onlyOwner
+    {
+        if (_users.length != _busdAmounts.length && _users.length != _rounds.length) {
             revert InvalidInputLength();
         }
         uint256 len = _users.length;
@@ -470,151 +298,104 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
             if (_users[x] == address(0) || _busdAmounts[x] < 0) {
                 revert InvalidInputValue();
             }
-            require(
-                _rounds[x] == 0 || _rounds[x] == 1 || _rounds[x] == 2,
-                "Not started any Round."
-            );
+            require(_rounds[x] == 0 || _rounds[x] == 1 || _rounds[x] == 2, "Not started any Round.");
 
             RoundInfo storage info = roundInfo[uint8(_rounds[x])];
             require(info.busdEnabled, "Not enable to purchase with BUSD");
 
-            require(
-                _busdAmounts[x] >= info.minContributionForBusd,
-                "Min contribution criteria not met"
-            );
-            require(
-                _busdAmounts[x] <= info.maxContributionForBusd,
-                "Max contribution criteria not met"
-            );
+            require(_busdAmounts[x] >= info.minContributionForBusd, "Min contribution criteria not met");
+            require(_busdAmounts[x] <= info.maxContributionForBusd, "Max contribution criteria not met");
 
             require(!userBusdDeposits[_users[x]], "Already Deposited");
             userBusdDeposits[_users[x]] = true;
 
             info.busdRaised = info.busdRaised + _busdAmounts[x];
-            require(
-                !hasSoldOut(uint8(_rounds[x]), true),
-                "Dexa is already sold out!"
-            );
+            require(!hasSoldOut(uint8(_rounds[x]), true), "Dexa is already sold out!");
 
-            info.contributions[_users[x]].contributedBusdAmount += _busdAmounts[
-                x
-            ];
+            info.contributions[_users[x]].contributedBusdAmount += _busdAmounts[x];
             if (info.contributions[msg.sender].purchaseTimeForBusd == 0) {
-                info.contributions[msg.sender].purchaseTimeForBusd = block
-                    .timestamp;
+                info.contributions[msg.sender].purchaseTimeForBusd = block.timestamp;
             }
 
-            uint256 busdForCoreTeam = (_busdAmounts[x] * percentForCoreTeam) /
-                MULTIPLER;
+            uint256 busdForCoreTeam;
+            uint256 busdForOwner;
+            uint256 tokenAmount;
 
-            busdAmountForCoreTeam += busdForCoreTeam;
+            unchecked {
+                busdForCoreTeam = (_busdAmounts[x] * percentForCoreTeam) / _MULTIPLER;
 
-            uint256 busdForOwner = _busdAmounts[x] - busdForCoreTeam;
+                busdAmountForCoreTeam += busdForCoreTeam;
 
-            uint256 tokenAmount = (_busdAmounts[x] * 1e18) / info.priceForBusd;
+                busdForOwner = _busdAmounts[x] - busdForCoreTeam;
 
-            info
-                .contributions[_users[x]]
-                .totalClaimableTokenAmountForBusd += tokenAmount;
+                tokenAmount = (_busdAmounts[x] * 1e18) / info.priceForBusd;
 
-            address[] memory referrers = IRegistration(register)
-                .getReferrerAddresses(_users[x]);
+                info.contributions[_users[x]].totalClaimableTokenAmountForBusd += tokenAmount;
+            }
 
-            for (uint8 i = 0; i < referralDeep; i++) {
+            address[] memory referrers = IRegistration(register).getReferrerAddresses(_users[x]);
+
+            for (uint8 i = 0; i < REFERRAL_DEEP; i++) {
                 if (referrers[i] == address(0)) {
                     break;
                 }
-                uint256 bonus = (_busdAmounts[x] * referralRate[i]) / MULTIPLER;
-                require(
-                    bonus <= busdBalanceForReward,
-                    "Not enough funds for reward"
-                );
+                uint256 bonus = (_busdAmounts[x] * referralRate[i]) / _MULTIPLER;
+                require(bonus <= busdBalanceForReward, "Not enough funds for reward");
 
-                refRewardByBUSD[referrers[i]] += bonus;
-                busdForOwner -= bonus;
-                busdBalanceForReward -= bonus;
+                unchecked {
+                    refRewardByBUSD[referrers[i]] += bonus;
+                    busdForOwner -= bonus;
+                    busdBalanceForReward -= bonus;
+                }
 
                 IERC20(busd).transfer(referrers[i], bonus);
-                emit SetRefRewardBUSD(
-                    referrers[i],
-                    _users[x],
-                    uint8(i + 1),
-                    uint8(_rounds[x]),
-                    bonus
-                );
+                emit SetRefRewardBUSD(referrers[i], _users[x], uint8(i + 1), uint8(_rounds[x]), bonus);
             }
 
             busdAmountForOwner += busdForOwner;
 
-            emit TokenPurchaseWithBUSD(
-                _users[x],
-                uint8(_rounds[x]),
-                _busdAmounts[x],
-                busdForOwner
-            );
+            emit TokenPurchaseWithBUSD(_users[x], uint8(_rounds[x]), _busdAmounts[x], busdForOwner);
         }
     }
 
-    function batchAllowanceToNtrUsers(
-        address[] memory _users,
-        uint256[] memory _ntrAmounts,
-        uint256[] memory _rounds
-    ) external override onlyOwner {
-        if (
-            _users.length != _ntrAmounts.length &&
-            _users.length != _rounds.length
-        ) {
+    function batchAllowanceToNtrUsers(address[] memory _users, uint256[] memory _ntrAmounts, uint256[] memory _rounds)
+        external
+        override
+        onlyOwner
+    {
+        if (_users.length != _ntrAmounts.length && _users.length != _rounds.length) {
             revert InvalidInputLength();
         }
         uint256 len = _users.length;
         for (uint256 x = 0; x < len; x++) {
-            require(
-                _rounds[x] == 0 || _rounds[x] == 1 || _rounds[x] == 2,
-                "Not started any Round."
-            );
+            require(_rounds[x] == 0 || _rounds[x] == 1 || _rounds[x] == 2, "Not started any Round.");
 
             RoundInfo storage info = roundInfo[uint8(_rounds[x])];
             require(info.ntrEnabled, "Not enable to purchase with NTR");
 
-            require(
-                _ntrAmounts[x] >= info.minContributionForNtr,
-                "Min contribution criteria not met"
-            );
-            require(
-                _ntrAmounts[x] <= info.maxContributionForNtr,
-                "Max contribution criteria not met"
-            );
+            require(_ntrAmounts[x] >= info.minContributionForNtr, "Min contribution criteria not met");
+            require(_ntrAmounts[x] <= info.maxContributionForNtr, "Max contribution criteria not met");
 
             require(!userNtrDeposits[_users[x]], "Already Deposited");
             userNtrDeposits[_users[x]] = true;
 
             info.ntrRaised = info.ntrRaised + _ntrAmounts[x];
 
-            require(
-                !hasSoldOut(uint8(_rounds[x]), false),
-                "Dexa is already sold out!"
-            );
+            require(!hasSoldOut(uint8(_rounds[x]), false), "Dexa is already sold out!");
 
-            info.contributions[_users[x]].contributedNtrAmount += _ntrAmounts[
-                x
-            ];
+            info.contributions[_users[x]].contributedNtrAmount += _ntrAmounts[x];
             if (info.contributions[_users[x]].purchaseTimeForNtr == 0) {
-                info.contributions[_users[x]].purchaseTimeForNtr = block
-                    .timestamp;
+                info.contributions[_users[x]].purchaseTimeForNtr = block.timestamp;
             }
 
-            uint256 tokenAmount = (_ntrAmounts[x] * 1e18) / info.priceForNtr;
+            uint256 tokenAmount;
+            unchecked {
+                tokenAmount = (_ntrAmounts[x] * 1e18) / info.priceForNtr;
 
-            info
-                .contributions[_users[x]]
-                .totalClaimableTokenAmountForNtr += tokenAmount;
+                info.contributions[_users[x]].totalClaimableTokenAmountForNtr += tokenAmount;
+            }
 
-            emit TokenPurchaseWithNTR(
-                _users[x],
-                uint8(_rounds[x]),
-                _ntrAmounts[x],
-                _ntrAmounts[x]
-            );
+            emit TokenPurchaseWithNTR(_users[x], uint8(_rounds[x]), _ntrAmounts[x], _ntrAmounts[x]);
         }
     }
 
@@ -658,10 +439,9 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
 
     function withdrawBusdForCoreTeam() external override onlyOwner {
         int8 _round = getRound();
-        if (
-            (_round == 0 || _round == 1 || _round == 2) &&
-            hasSoldOut(uint8(_round), true)
-        ) {} else require(_hasEnded(), "Round is not over");
+        if ((_round == 0 || _round == 1 || _round == 2) && hasSoldOut(uint8(_round), true)) {} else {
+            require(_hasEnded(), "Round is not over");
+        }
         require(busdAmountForCoreTeam > 0, "Nothing to claim.");
         uint256 amount = busdAmountForCoreTeam;
         busdAmountForCoreTeam = 0;
@@ -670,10 +450,9 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
 
     function withdrawBUSD() external override onlyOwner {
         int8 _round = getRound();
-        if (
-            (_round == 0 || _round == 1 || _round == 2) &&
-            hasSoldOut(uint8(_round), true)
-        ) {} else require(_hasEnded(), "Round is not over");
+        if ((_round == 0 || _round == 1 || _round == 2) && hasSoldOut(uint8(_round), true)) {} else {
+            require(_hasEnded(), "Round is not over");
+        }
         uint256 amount = busdAmountForOwner;
         busdAmountForOwner = 0;
         IERC20(busd).transfer(companyAddress, amount);
@@ -691,16 +470,12 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         percentForCoreTeam = _rate;
     }
 
-    function setReleaseMonths(
-        uint32 _releaseMonths
-    ) external override onlyOwner {
+    function setReleaseMonths(uint32 _releaseMonths) external override onlyOwner {
         emit ReleaseMonthsUpdated(releaseMonth, _releaseMonths);
         releaseMonth = _releaseMonths;
     }
 
-    function changeRegisterAddress(
-        address _register
-    ) external override onlyOwner {
+    function changeRegisterAddress(address _register) external override onlyOwner {
         emit RegistrationContractUpdated(register, _register);
         register = _register;
     }
@@ -710,31 +485,23 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         deXa = _deXa;
     }
 
-    function changeCoreTeamAddress(
-        address _coreTeamAddress
-    ) external override onlyOwner {
+    function changeCoreTeamAddress(address _coreTeamAddress) external override onlyOwner {
         emit CoreTeamAccountUpdated(coreTeamAddress, _coreTeamAddress);
         coreTeamAddress = _coreTeamAddress;
     }
 
-    function changeCompanyAddress(
-        address _newAddress
-    ) external override onlyOwner {
+    function changeCompanyAddress(address _newAddress) external override onlyOwner {
         companyAddress = _newAddress;
         emit CompanyAccountUpdated(companyAddress, _newAddress);
     }
 
-    function depositBusdForReward(
-        uint256 _busdAmount
-    ) external override onlyOwner {
+    function depositBusdForReward(uint256 _busdAmount) external override onlyOwner {
         busdBalanceForReward += _busdAmount;
         IERC20(busd).transferFrom(msg.sender, address(this), _busdAmount);
         emit BusdRewardAmountDeposited(_busdAmount, busdBalanceForReward);
     }
 
-    function withdrawBusdForReward(
-        address _receiver
-    ) external override onlyOwner {
+    function withdrawBusdForReward(address _receiver) external override onlyOwner {
         uint256 balance = busdBalanceForReward;
         busdBalanceForReward = 0;
         IERC20(busd).transfer(_receiver, balance);
@@ -742,11 +509,54 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     }
 
     function setReferralRate(uint16[] memory _rates) external onlyOwner {
-        if (_rates.length != referralDeep) {
+        if (_rates.length != REFERRAL_DEEP) {
             revert InvalidInputLength();
         }
         for (uint8 i = 0; i < _rates.length; i++) {
             referralRate[i] = _rates[i];
+        }
+    }
+
+    function getClaimableTokenAmountFromBusd(uint8 _round, address _user) public view returns (uint256) {
+        RoundInfo storage info = roundInfo[_round];
+        ContributionInfo memory contribution = info.contributions[_user];
+
+        if ((block.timestamp - contribution.purchaseTimeForBusd) / _MONTH > info.lockMonths) {
+            uint256 months = (block.timestamp - contribution.purchaseTimeForBusd) / _MONTH - info.lockMonths;
+
+            if (months > releaseMonth) months = releaseMonth;
+
+            uint256 tokenAmount;
+            unchecked {
+                tokenAmount = (months * contribution.totalClaimableTokenAmountForBusd) / releaseMonth
+                    - contribution.claimedTokenAmountForBusd;
+            }
+
+            return tokenAmount;
+        } else {
+            return 0;
+        }
+    }
+
+    function getClaimableTokenAmountFromNtr(uint8 _round, address _user) public view returns (uint256) {
+        RoundInfo storage info = roundInfo[_round];
+        ContributionInfo memory contribution = info.contributions[_user];
+
+        if ((block.timestamp - contribution.purchaseTimeForNtr) / _MONTH > info.lockMonths) {
+            uint256 months = (block.timestamp - contribution.purchaseTimeForNtr) / _MONTH - info.lockMonths;
+
+            if (months > releaseMonth) months = releaseMonth;
+
+            uint256 tokenAmount;
+
+            unchecked {
+                tokenAmount = (months * contribution.totalClaimableTokenAmountForNtr) / releaseMonth
+                    - contribution.claimedTokenAmountForNtr;
+            }
+
+            return tokenAmount;
+        } else {
+            return 0;
         }
     }
 
@@ -756,25 +566,15 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
 
         if (nowTime < roundInfo[0].startTime) {
             ret = -1; // any round is not started
-        } else if (
-            nowTime >= roundInfo[0].startTime && nowTime < roundInfo[0].endTime
-        ) {
+        } else if (nowTime >= roundInfo[0].startTime && nowTime < roundInfo[0].endTime) {
             ret = 0; // in round 1
-        } else if (
-            nowTime >= roundInfo[0].endTime && nowTime < roundInfo[1].startTime
-        ) {
+        } else if (nowTime >= roundInfo[0].endTime && nowTime < roundInfo[1].startTime) {
             ret = -2; // round 2 is not started
-        } else if (
-            nowTime >= roundInfo[1].startTime && nowTime < roundInfo[1].endTime
-        ) {
+        } else if (nowTime >= roundInfo[1].startTime && nowTime < roundInfo[1].endTime) {
             ret = 1; // in round 2
-        } else if (
-            nowTime >= roundInfo[1].endTime && nowTime < roundInfo[2].startTime
-        ) {
+        } else if (nowTime >= roundInfo[1].endTime && nowTime < roundInfo[2].startTime) {
             ret = -3; // round 3 is not started
-        } else if (
-            nowTime >= roundInfo[2].startTime && nowTime < roundInfo[2].endTime
-        ) {
+        } else if (nowTime >= roundInfo[2].startTime && nowTime < roundInfo[2].endTime) {
             ret = 2; // in round 3
         } else if (nowTime >= roundInfo[2].endTime) {
             ret = -4; // all round is ended
@@ -787,16 +587,15 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         uint256 dexaAmount;
         if (_isBusd) {
             dexaAmount = (info.busdRaised * 1e18) / info.priceForBusd;
-        } else dexaAmount = (info.ntrRaised * 1e18) / info.priceForNtr;
+        } else {
+            dexaAmount = (info.ntrRaised * 1e18) / info.priceForNtr;
+        }
 
         if (dexaAmount > info.maxDexaAmountToSell) return true;
         else return false;
     }
 
-    function getContribute(
-        address _user,
-        uint8 _round
-    ) public view returns (ContributionInfo memory) {
+    function getContribute(address _user, uint8 _round) public view returns (ContributionInfo memory) {
         return roundInfo[_round].contributions[_user];
     }
 
@@ -804,7 +603,7 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         public
         view
         returns (
-            uint16[referralDeep] memory _referralRate,
+            uint16[REFERRAL_DEEP] memory _referralRate,
             uint256 _percentForCoreTeam,
             address _coreTeamAddress,
             address _companyAddress

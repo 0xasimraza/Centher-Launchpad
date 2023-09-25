@@ -150,7 +150,7 @@ interface IDeXaPresale {
         uint256[] memory _rounds
     ) external;
 
-     function batchAllowanceToNtrUsers(
+    function batchAllowanceToNtrUsers(
         address[] memory _users,
         uint256[] memory _busdAmounts,
         uint256[] memory _rounds
