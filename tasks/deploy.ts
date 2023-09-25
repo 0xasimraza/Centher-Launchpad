@@ -8,40 +8,50 @@ export default async function deploy(
   const upgrades = hre.upgrades;
 
   const [account] = await ethers.getSigners();
-
-  console.log(
-    `Balance for 1st account ${await account.getAddress()}: ${await account.getBalance()}`
-  );
+  console.log("connected account: ", account.address);
 
   const DeXaPresale = await ethers.getContractFactory("DeXaPresale");
 
+  //testnet
   let args = [
-    "0x935ACed044481cAd3d48d051e65a851Cd9Cb76f7",
-    "0x82844F286e6f441827610D9f06E6831635bE252c",
-    "0x143c4546F845d3883B16dd2D90CfA371A2bB3EB9",
-    "0x538584360a8ec67338Ce73721585aC386d7a4e6E",
-    "0xdD15D2650387Fb6FEDE27ae7392C402a393F8A37",
-    "0xdD15D2650387Fb6FEDE27ae7392C402a393F8A37",
+    "0x935ACed044481cAd3d48d051e65a851Cd9Cb76f7", // dexa
+    "0x82844F286e6f441827610D9f06E6831635bE252c", // ntr
+    "0x1B855BF0e0eDBF394cB8F74D906d8d93A1C2D6e0", // usdt
+    "0x538584360a8ec67338Ce73721585aC386d7a4e6E", // centher registration
+    "0xdD15D2650387Fb6FEDE27ae7392C402a393F8A37", // wallet address
+    "0xdD15D2650387Fb6FEDE27ae7392C402a393F8A37", // company address
   ];
+
+  ////mainnet
+  // let args = [
+  //   "", // dexa
+  //   "", // ntr
+  //   "", // usdt
+  //   "", // centher registration
+  //   "", // wallet address
+  //   "", // company address
+  // ];
 
   const instance = await upgrades.deployProxy(DeXaPresale, args, {
     initializer: "initialize",
   });
-  await instance.deployed();
+  await instance.waitForDeployment();
+
+  // await instance.deployed();
   await delay(26000);
-  console.log("Deployed Address", instance.address);
+  console.log("Deployed Address", instance.target);
 
   // Upgrading
-  //   const DeXaPresaleV2 = await ethers.getContractFactory("DeXaPresale");
-  //   const upgraded = await upgrades.upgradeProxy(
-  //     "0x719b7451Bc4247cd4424d92a6D441FFAEDD50d34",
-  //     DeXaPresaleV2
-  //   );
-  //   console.log("Deployed Address", upgraded.address);
+  // const DeXaPresaleV2 = await ethers.getContractFactory("DeXaPresale");
+  // const upgraded = await upgrades.upgradeProxy(
+  //   "0x719b7451Bc4247cd4424d92a6D441FFAEDD50d34",
+  //   DeXaPresaleV2
+  // );
+  // console.log("Deployed Address", upgraded.address);
 
   if (hre.network.name != "hardhat") {
     await hre.run("verify:verify", {
-      address: instance.address,
+      address: instance.target,
       constructorArguments: [],
     });
   }
@@ -61,3 +71,7 @@ function delay(ms: number) {
 //   _coreTeam: args[4],
 //   _company: args[5],
 // }),
+// new proxy: 0xaeC113a50703BD248712C42e74f35E51968c2b90 //mainnet copy
+// another proxy: 0x1Ee9fD67ceA1E5Ea130a6ceAAe51EA8c7BF65Ec8 // 15mins = month
+
+// proxy with usdt: 0x5Eaf2D08FA62220AC064Df5e47521cB7cc16F964
