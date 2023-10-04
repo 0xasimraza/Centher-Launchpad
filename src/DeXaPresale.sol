@@ -195,7 +195,11 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         emit TokenClaim(msg.sender, _round, tokenAmount);
     }
 
-    function allowanceToBusdUser(address _user, uint256 _busdAmount, uint256 _round) external override onlyOwner {
+    function allowanceToBusdUser(address _user, uint256 _busdAmount, uint256 _round, uint256 _purchaseTime)
+        external
+        override
+        onlyOwner
+    {
         if (_user == address(0) || _busdAmount < 0) {
             revert InvalidInputValue();
         }
@@ -215,7 +219,7 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
 
         info.contributions[msg.sender].contributedBusdAmount += _busdAmount;
         if (info.contributions[_user].purchaseTimeForBusd == 0) {
-            info.contributions[_user].purchaseTimeForBusd = block.timestamp;
+            info.contributions[_user].purchaseTimeForBusd = _purchaseTime;
         }
 
         uint256 busdForCoreTeam;
@@ -255,7 +259,11 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         emit TokenPurchaseWithBUSD(_user, uint8(_round), _busdAmount, busdForOwner);
     }
 
-    function allowanceToNtrUser(address _user, uint256 _ntrAmount, uint256 _round) external override onlyOwner {
+    function allowanceToNtrUser(address _user, uint256 _ntrAmount, uint256 _round, uint256 _purchaseTime)
+        external
+        override
+        onlyOwner
+    {
         require(_round == 0 || _round == 1 || _round == 2, "Not started any Round.");
 
         RoundInfo storage info = roundInfo[uint8(_round)];
@@ -273,7 +281,7 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
 
         info.contributions[_user].contributedNtrAmount += _ntrAmount;
         if (info.contributions[_user].purchaseTimeForNtr == 0) {
-            info.contributions[_user].purchaseTimeForNtr = block.timestamp;
+            info.contributions[_user].purchaseTimeForNtr = _purchaseTime;
         }
 
         uint256 tokenAmount;
@@ -285,11 +293,12 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         emit TokenPurchaseWithNTR(_user, uint8(_round), _ntrAmount, _ntrAmount);
     }
 
-    function batchAllowanceToBusdUsers(address[] memory _users, uint256[] memory _busdAmounts, uint256[] memory _rounds)
-        external
-        override
-        onlyOwner
-    {
+    function batchAllowanceToBusdUsers(
+        address[] memory _users,
+        uint256[] memory _busdAmounts,
+        uint256[] memory _rounds,
+        uint256 _purchaseTime
+    ) external override onlyOwner {
         if (_users.length != _busdAmounts.length && _users.length != _rounds.length) {
             revert InvalidInputLength();
         }
@@ -314,7 +323,7 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
 
             info.contributions[_users[x]].contributedBusdAmount += _busdAmounts[x];
             if (info.contributions[msg.sender].purchaseTimeForBusd == 0) {
-                info.contributions[msg.sender].purchaseTimeForBusd = block.timestamp;
+                info.contributions[msg.sender].purchaseTimeForBusd = _purchaseTime;
             }
 
             uint256 busdForCoreTeam;
@@ -358,11 +367,12 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         }
     }
 
-    function batchAllowanceToNtrUsers(address[] memory _users, uint256[] memory _ntrAmounts, uint256[] memory _rounds)
-        external
-        override
-        onlyOwner
-    {
+    function batchAllowanceToNtrUsers(
+        address[] memory _users,
+        uint256[] memory _ntrAmounts,
+        uint256[] memory _rounds,
+        uint256 _purchaseTime
+    ) external override onlyOwner {
         if (_users.length != _ntrAmounts.length && _users.length != _rounds.length) {
             revert InvalidInputLength();
         }
@@ -385,7 +395,7 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
 
             info.contributions[_users[x]].contributedNtrAmount += _ntrAmounts[x];
             if (info.contributions[_users[x]].purchaseTimeForNtr == 0) {
-                info.contributions[_users[x]].purchaseTimeForNtr = block.timestamp;
+                info.contributions[_users[x]].purchaseTimeForNtr = _purchaseTime;
             }
 
             uint256 tokenAmount;

@@ -6,49 +6,24 @@ interface IDeXaPresale {
     error InvalidInputLength();
 
     event TokenPurchaseWithBUSD(
-        address indexed beneficiary,
-        uint8 round,
-        uint256 busdAmount,
-        uint256 busdAmountForOwner
+        address indexed beneficiary, uint8 round, uint256 busdAmount, uint256 busdAmountForOwner
     );
     event TokenPurchaseWithNTR(
-        address indexed beneficiary,
-        uint8 round,
-        uint256 busdAmount,
-        uint256 busdAmountForOwner
+        address indexed beneficiary, uint8 round, uint256 busdAmount, uint256 busdAmountForOwner
     );
-    event TokenClaim(
-        address indexed beneficiary,
-        uint8 round,
-        uint256 tokenAmount
-    );
+    event TokenClaim(address indexed beneficiary, uint8 round, uint256 tokenAmount);
     event RefRewardClaimBUSD(address indexed referrer, uint256 amount);
 
-    event SetRefRewardBUSD(
-        address indexed referrer,
-        address indexed user,
-        uint8 level,
-        uint8 round,
-        uint256 amount
-    );
+    event SetRefRewardBUSD(address indexed referrer, address indexed user, uint8 level, uint8 round, uint256 amount);
 
     event RateUpdatedForCoreTeam(uint256 oldRate, uint256 newRate);
     event ReleaseMonthsUpdated(uint32 releaseMonth, uint32 _releaseMonths);
     event RegistrationContractUpdated(address register, address _register);
     event DexaContractUpdated(address deXa, address _deXa);
-    event CoreTeamAccountUpdated(
-        address oldCoreTeamAddress,
-        address newCoreTeamAddress
-    );
-    event CompanyAccountUpdated(
-        address oldCompanyAccount,
-        address newCompanyAccount
-    );
+    event CoreTeamAccountUpdated(address oldCoreTeamAddress, address newCoreTeamAddress);
+    event CompanyAccountUpdated(address oldCompanyAccount, address newCompanyAccount);
 
-    event BusdRewardAmountDeposited(
-        uint256 depositedAmount,
-        uint256 currentBalance
-    );
+    event BusdRewardAmountDeposited(uint256 depositedAmount, uint256 currentBalance);
     event BusdRewardAmountWithdrawn(uint256 withdrawnAmount);
 
     struct ContributionInfo {
@@ -132,27 +107,21 @@ interface IDeXaPresale {
 
     function withdrawBusdForReward(address _receiver) external;
 
-    function allowanceToBusdUser(
-        address _user,
-        uint256 _busdAmount,
-        uint256 _round
-    ) external;
+    function allowanceToBusdUser(address _user, uint256 _busdAmount, uint256 _round, uint256 _purchaseTime) external;
 
-    function allowanceToNtrUser(
-        address _user,
-        uint256 _ntrAmount,
-        uint256 _round
-    ) external;
+    function allowanceToNtrUser(address _user, uint256 _ntrAmount, uint256 _round, uint256 _purchaseTime) external;
 
     function batchAllowanceToBusdUsers(
         address[] calldata _user,
         uint256[] calldata _amount,
-        uint256[] memory _rounds
+        uint256[] memory _rounds,
+        uint256 _purchaseTime
     ) external;
 
     function batchAllowanceToNtrUsers(
         address[] memory _users,
         uint256[] memory _busdAmounts,
-        uint256[] memory _rounds
+        uint256[] memory _rounds,
+        uint256 _purchaseTime
     ) external;
 }
