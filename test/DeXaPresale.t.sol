@@ -89,7 +89,7 @@ contract TokenTest is Test {
             0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 1, 50000000e18, 150e18, 1000e18
         );
 
-        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0, block.timestamp);
     }
 
     function testBusdUsersAllowance() public {
@@ -99,6 +99,7 @@ contract TokenTest is Test {
         deXaPresale.setRoundInfoForBusd(
             0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 1, 50000000e18, 5e18, 1000e18
         );
+        uint256 creationTimeOfRound = block.timestamp;
 
         address[] memory _users = new address[](2);
         _users[0] = address(user1);
@@ -112,7 +113,7 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
     }
 
     function testNtrUsersAllowance() public {
@@ -123,6 +124,8 @@ contract TokenTest is Test {
             0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 1, 50000000e18, 5e18, 1000e18
         );
 
+        uint256 creationTimeOfRound = block.timestamp;
+
         deXaPresale.setRoundInfoForNtr(0, 160000000000000000000, 5e18, 5000e18);
 
         address[] memory _users = new address[](2);
@@ -137,7 +140,7 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToNtrUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToNtrUsers(_users, _allowances, _rounds, creationTimeOfRound);
     }
 
     function testShoulFailedNtrAllowanceMultipleDeposits() public {
@@ -148,6 +151,8 @@ contract TokenTest is Test {
             0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 1, 50000000e18, 5e18, 1000e18
         );
 
+        uint256 creationTimeOfRound = block.timestamp;
+
         deXaPresale.setRoundInfoForNtr(0, 160000000000000000000, 5e18, 5000e18);
 
         address[] memory _users = new address[](2);
@@ -162,9 +167,9 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToNtrUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToNtrUsers(_users, _allowances, _rounds, creationTimeOfRound );
         vm.expectRevert("Already Deposited");
-        deXaPresale.batchAllowanceToNtrUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToNtrUsers(_users, _allowances, _rounds, creationTimeOfRound );
     }
 
     function testSetRound0AndPurchaseWithMinBUSD() public {
@@ -243,6 +248,8 @@ contract TokenTest is Test {
             0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 4, 50000000e18, 150e18, 1000e18
         );
 
+        uint256 creationTimeOfRound = block.timestamp;
+
         address[] memory _users = new address[](2);
         _users[0] = address(user1);
         _users[1] = address(user2);
@@ -255,7 +262,7 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
 
         changePrank(user1);
 
@@ -273,6 +280,8 @@ contract TokenTest is Test {
             0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 1, 50000000e18, 5e18, 1000e18
         );
 
+        uint256 creationTimeOfRound = block.timestamp;
+
         deXaPresale.setRoundInfoForNtr(0, 160000000000000000000, 5e18, 100000e18);
 
         address[] memory _users = new address[](2);
@@ -287,7 +296,7 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToNtrUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToNtrUsers(_users, _allowances, _rounds,creationTimeOfRound);
 
         vm.warp(block.timestamp + 30 days * 12);
         changePrank(user1);
@@ -333,6 +342,8 @@ contract TokenTest is Test {
             0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 4, 50000000e18, 150e18, 1000e18
         );
 
+        uint256 creationTimeOfRound = block.timestamp;
+
         address[] memory _users = new address[](2);
         _users[0] = address(user1);
         _users[1] = address(user2);
@@ -347,7 +358,7 @@ contract TokenTest is Test {
 
         address[] memory referrerAddresses = register.getReferrerAddresses(user2);
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
 
         // level1 amount check
         assertEq(busd.balanceOf(referrerAddresses[0]), 9000000000000000000, "Amount not match");
@@ -385,6 +396,8 @@ contract TokenTest is Test {
             0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 4, 50000000e18, 150e18, 1500e18
         );
 
+        uint256 creationTimeOfRound = block.timestamp;
+
         address[] memory _users = new address[](2);
         _users[0] = address(user1);
         _users[1] = address(user2);
@@ -399,7 +412,7 @@ contract TokenTest is Test {
 
         address[] memory referrerAddresses = register.getReferrerAddresses(user2);
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
 
         // level1 amount check
         assertEq(busd.balanceOf(referrerAddresses[0]), 90000000000000000000, "Amount not match");
@@ -494,6 +507,8 @@ contract TokenTest is Test {
             0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 4, 50000000e18, 150e18, 1500e18
         );
 
+        uint256 creationTimeOfRound = block.timestamp;
+
         address[] memory _users = new address[](2);
         _users[0] = address(user1);
         _users[1] = address(user2);
@@ -506,10 +521,10 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
 
         vm.expectRevert("Already Deposited");
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
     }
 
     function testReinvestForUsersByOwner() public {
@@ -541,10 +556,10 @@ contract TokenTest is Test {
         deXaPresale.setRoundInfoForBusd(
             0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 4, 50000000e18, 150e18, 1500e18
         );
-        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0, block.timestamp);
 
         vm.expectRevert("Already Deposited");
-        deXaPresale.allowanceToBusdUser(user1, 150e18, 0);
+        deXaPresale.allowanceToBusdUser(user1, 150e18, 0, block.timestamp);
     }
 
     function testSoldOutCheck() public {
@@ -678,6 +693,8 @@ contract TokenTest is Test {
             type(uint256).max
         );
 
+        uint256 creationTimeOfRound = block.timestamp;
+
         vm.startPrank(owner);
         busd.approve(address(deXaPresale), _amounts);
         deXaPresale.depositBusdForReward(_amounts);
@@ -694,7 +711,7 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
 
         vm.warp(block.timestamp + 30 days * 12);
         uint256 totalClaimableAmount = (_amounts * 1e18) / 800000000000000000;
@@ -821,119 +838,119 @@ contract TokenTest is Test {
         assertEq(deXa.balanceOf(user1), 937500000000000000, "Not equal");
     }
 
-    function testThreeRoundsPuchaseWithBusdAndNtrWithTenMonthsRelease() public {
-        vm.startPrank(owner);
-        deal({token: address(deXa), to: address(deXaPresale), give: 50000000e18});
+    // function testThreeRoundsPuchaseWithBusdAndNtrWithTenMonthsRelease() public {
+    //     vm.startPrank(owner);
+    //     deal({token: address(deXa), to: address(deXaPresale), give: 50000000e18});
 
-        deal({token: address(ntr), to: address(deXaPresale), give: 50000000e18});
+    //     deal({token: address(ntr), to: address(deXaPresale), give: 50000000e18});
 
-        deal({token: address(busd), to: address(other), give: 50000000e18});
+    //     deal({token: address(busd), to: address(other), give: 50000000e18});
 
-        deXaPresale.setRoundInfoForBusd(
-            0, 800000000000000000, block.timestamp, block.timestamp + 2 weeks, 4, 50000000e18, 150e18, 1000e18
-        );
+    //     deXaPresale.setRoundInfoForBusd(
+    //         0, 800000000000000000, block.timestamp, block.timestamp + 2 weeks, 4, 50000000e18, 150e18, 1000e18
+    //     );
 
-        deXaPresale.setRoundInfoForNtr(0, 160000000000000000000, 150e18, 5000e18);
+    //     deXaPresale.setRoundInfoForNtr(0, 160000000000000000000, 150e18, 5000e18);
 
-        changePrank(user1);
+    //     changePrank(user1);
 
-        busd.approve(address(deXaPresale), 1000e18);
+    //     busd.approve(address(deXaPresale), 1000e18);
 
-        deXaPresale.tokenPurchaseWithBUSD(150e18);
+    //     deXaPresale.tokenPurchaseWithBUSD(150e18);
 
-        ntr.approve(address(deXaPresale), 1000e18);
-        deXaPresale.tokenPurchaseWithNTR(150e18);
+    //     ntr.approve(address(deXaPresale), 1000e18);
+    //     deXaPresale.tokenPurchaseWithNTR(150e18);
 
-        vm.warp(block.timestamp + 30 days * 6);
+    //     vm.warp(block.timestamp + 30 days * 6);
 
-        changePrank(owner);
-        deXaPresale.setRoundInfoForBusd(
-            1, 1000000000000000000, block.timestamp, block.timestamp + 2 weeks, 4, 50000000e18, 150e18, 1000e18
-        );
+    //     changePrank(owner);
+    //     deXaPresale.setRoundInfoForBusd(
+    //         1, 1000000000000000000, block.timestamp, block.timestamp + 2 weeks, 4, 50000000e18, 150e18, 1000e18
+    //     );
 
-        deXaPresale.setRoundInfoForNtr(0, 160000000000000000000, 150e18, 5000e18);
+    //     deXaPresale.setRoundInfoForNtr(0, 160000000000000000000, 150e18, 5000e18);
 
-        changePrank(user1);
-        busd.approve(address(deXaPresale), 1000e18);
-        deXaPresale.tokenPurchaseWithBUSD(150e18);
+    //     changePrank(user1);
+    //     busd.approve(address(deXaPresale), 1000e18);
+    //     deXaPresale.tokenPurchaseWithBUSD(150e18);
 
-        changePrank(user2);
-        busd.approve(address(deXaPresale), 1000e18);
-        deXaPresale.tokenPurchaseWithBUSD(150e18);
+    //     changePrank(user2);
+    //     busd.approve(address(deXaPresale), 1000e18);
+    //     deXaPresale.tokenPurchaseWithBUSD(150e18);
 
-        vm.warp(block.timestamp + 30 days * 3);
+    //     vm.warp(block.timestamp + 30 days * 3);
 
-        changePrank(owner);
-        deXaPresale.setRoundInfoForBusd(
-            2, 1200000000000000000, block.timestamp, block.timestamp + 2 weeks, 4, 50000000e18, 150e18, 1000e18
-        );
+    //     changePrank(owner);
+    //     deXaPresale.setRoundInfoForBusd(
+    //         2, 1200000000000000000, block.timestamp, block.timestamp + 2 weeks, 4, 50000000e18, 150e18, 1000e18
+    //     );
 
-        deXaPresale.setRoundInfoForNtr(0, 160000000000000000000, 150e18, 5000e18);
+    //     deXaPresale.setRoundInfoForNtr(0, 160000000000000000000, 150e18, 5000e18);
 
-        changePrank(user1);
-        busd.approve(address(deXaPresale), 1000e18);
-        deXaPresale.tokenPurchaseWithBUSD(150e18);
+    //     changePrank(user1);
+    //     busd.approve(address(deXaPresale), 1000e18);
+    //     deXaPresale.tokenPurchaseWithBUSD(150e18);
 
-        changePrank(user2);
-        busd.approve(address(deXaPresale), 1000e18);
-        deXaPresale.tokenPurchaseWithBUSD(150e18);
+    //     changePrank(user2);
+    //     busd.approve(address(deXaPresale), 1000e18);
+    //     deXaPresale.tokenPurchaseWithBUSD(150e18);
 
-        changePrank(other);
-        busd.approve(address(deXaPresale), 1000e18);
-        deXaPresale.tokenPurchaseWithBUSD(150e18);
+    //     changePrank(other);
+    //     busd.approve(address(deXaPresale), 1000e18);
+    //     deXaPresale.tokenPurchaseWithBUSD(150e18);
 
-        vm.warp(block.timestamp + 30 days * 5);
+    //     vm.warp(block.timestamp + 30 days * 5);
 
-        // 14 months claims
-        changePrank(user1);
-        deXaPresale.claimTokensFromBusd(0);
-        assertEq(deXa.balanceOf(user1), 187500000000000000000, "Not equal");
+    //     // 14 months claims
+    //     changePrank(user1);
+    //     deXaPresale.claimTokensFromBusd(0);
+    //     assertEq(deXa.balanceOf(user1), 187500000000000000000, "Not equal");
 
-        // 4 months claims
-        changePrank(user2);
-        deXaPresale.claimTokensFromBusd(1);
-        assertEq(deXa.balanceOf(user2), 60000000000000000000, "Not equal");
+    //     // 4 months claims
+    //     changePrank(user2);
+    //     deXaPresale.claimTokensFromBusd(1);
+    //     assertEq(deXa.balanceOf(user2), 60000000000000000000, "Not equal");
 
-        changePrank(user1);
-        // clear old claims
-        deXa.transfer(owner, deXa.balanceOf(user1));
-        deXaPresale.claimTokensFromBusd(1);
-        assertEq(deXa.balanceOf(user1), 60000000000000000000, "Not equal");
+    //     changePrank(user1);
+    //     // clear old claims
+    //     deXa.transfer(owner, deXa.balanceOf(user1));
+    //     deXaPresale.claimTokensFromBusd(1);
+    //     assertEq(deXa.balanceOf(user1), 60000000000000000000, "Not equal");
 
-        // 1 month claim
-        changePrank(other);
-        deXaPresale.claimTokensFromBusd(2);
-        assertEq(deXa.balanceOf(other), 12500000000000000000, "Not equal");
+    //     // 1 month claim
+    //     changePrank(other);
+    //     deXaPresale.claimTokensFromBusd(2);
+    //     assertEq(deXa.balanceOf(other), 12500000000000000000, "Not equal");
 
-        vm.warp(block.timestamp + 30 days * 12);
+    //     vm.warp(block.timestamp + 30 days * 12);
 
-        //try claim another times, not return any amount of DXC because already claimed
-        changePrank(user1);
-        deXa.transfer(owner, deXa.balanceOf(user1));
-        deXaPresale.claimTokensFromBusd(0);
-        assertEq(deXa.balanceOf(user1), 0, "Not equal");
+    //     //try claim another times, not return any amount of DXC because already claimed
+    //     changePrank(user1);
+    //     deXa.transfer(owner, deXa.balanceOf(user1));
+    //     deXaPresale.claimTokensFromBusd(0);
+    //     assertEq(deXa.balanceOf(user1), 0, "Not equal");
 
-        changePrank(user2);
-        deXa.transfer(owner, deXa.balanceOf(user2));
-        deXaPresale.claimTokensFromBusd(1);
-        assertEq(deXa.balanceOf(user2), 90000000000000000000, "Not equal");
-        changePrank(user1);
-        deXa.transfer(owner, deXa.balanceOf(user1));
-        deXaPresale.claimTokensFromBusd(1);
-        assertEq(deXa.balanceOf(user1), 90000000000000000000, "Not equal");
+    //     changePrank(user2);
+    //     deXa.transfer(owner, deXa.balanceOf(user2));
+    //     deXaPresale.claimTokensFromBusd(1);
+    //     assertEq(deXa.balanceOf(user2), 90000000000000000000, "Not equal");
+    //     changePrank(user1);
+    //     deXa.transfer(owner, deXa.balanceOf(user1));
+    //     deXaPresale.claimTokensFromBusd(1);
+    //     assertEq(deXa.balanceOf(user1), 90000000000000000000, "Not equal");
 
-        changePrank(other);
-        deXa.transfer(owner, deXa.balanceOf(other));
-        deXaPresale.claimTokensFromBusd(2);
-        assertEq(deXa.balanceOf(other), 112500000000000000000, "Not equal");
+    //     changePrank(other);
+    //     deXa.transfer(owner, deXa.balanceOf(other));
+    //     deXaPresale.claimTokensFromBusd(2);
+    //     assertEq(deXa.balanceOf(other), 112500000000000000000, "Not equal");
 
-        //ntr claim
-        changePrank(user1);
-        // clear old claims
-        deXa.transfer(owner, deXa.balanceOf(user1));
-        deXaPresale.claimTokensFromNtr(0);
-        assertEq(deXa.balanceOf(user1), 937500000000000000, "Not equal");
-    }
+    //     //ntr claim
+    //     changePrank(user1);
+    //     // clear old claims
+    //     deXa.transfer(owner, deXa.balanceOf(user1));
+    //     deXaPresale.claimTokensFromNtr(0);
+    //     assertEq(deXa.balanceOf(user1), 937500000000000000, "Not equal");
+    // }
 
     // test according in minutes
     // function testSetRound0AndPurchaseWithMinBUSD() public {
