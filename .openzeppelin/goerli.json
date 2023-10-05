@@ -49,6 +49,16 @@
       "address": "0x5Eaf2D08FA62220AC064Df5e47521cB7cc16F964",
       "txHash": "0xa66b0898cf1b8052c942244fc60fde2f13625484e32912bfb670de6182f8cd2a",
       "kind": "transparent"
+    },
+    {
+      "address": "0xc5549fABCDB2665E64736C3C4859f33fd2C3d8bc",
+      "txHash": "0x63bcbd4bf4b859fa808cf21e8b615fcedc7a112928317585aa22747ba1484386",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x67Bada7DCfD74853af467cc379e21C54B67E9D07",
+      "txHash": "0xfded90db7e4c80eca79f93407a9ac25c5578572dc030cbaf87bad409fa2130f6",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -2099,6 +2109,1236 @@
               {
                 "label": "contributions",
                 "type": "t_mapping(t_address,t_struct(ContributionInfo)4439_storage)",
+                "offset": 0,
+                "slot": "13"
+              }
+            ],
+            "numberOfBytes": "448"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "38528744eae740b10aa10490cdb417e846b1c3fe1bae0991a7cd39f9b1aa1a8b": {
+      "address": "0xfcB3708761A188f9F3C1442307c7285229786f02",
+      "txHash": "0xa7c68a4fbb4341477b069a82529032919797472caa3fd420814394cf26128c96",
+      "layout": {
+        "solcVersion": "0.8.13",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol:80"
+          },
+          {
+            "label": "releaseMonth",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_uint32",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:15"
+          },
+          {
+            "label": "deXa",
+            "offset": 4,
+            "slot": "151",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:17"
+          },
+          {
+            "label": "coreTeamAddress",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:19"
+          },
+          {
+            "label": "companyAddress",
+            "offset": 0,
+            "slot": "153",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:20"
+          },
+          {
+            "label": "busd",
+            "offset": 0,
+            "slot": "154",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:22"
+          },
+          {
+            "label": "ntr",
+            "offset": 0,
+            "slot": "155",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:23"
+          },
+          {
+            "label": "register",
+            "offset": 0,
+            "slot": "156",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:24"
+          },
+          {
+            "label": "busdBalanceForReward",
+            "offset": 0,
+            "slot": "157",
+            "type": "t_uint256",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:26"
+          },
+          {
+            "label": "busdAmountForCoreTeam",
+            "offset": 0,
+            "slot": "158",
+            "type": "t_uint256",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:31"
+          },
+          {
+            "label": "busdAmountForOwner",
+            "offset": 0,
+            "slot": "159",
+            "type": "t_uint256",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:32"
+          },
+          {
+            "label": "percentForCoreTeam",
+            "offset": 0,
+            "slot": "160",
+            "type": "t_uint256",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:33"
+          },
+          {
+            "label": "refRewardByBUSD",
+            "offset": 0,
+            "slot": "161",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:35"
+          },
+          {
+            "label": "userBusdDeposits",
+            "offset": 0,
+            "slot": "162",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:36"
+          },
+          {
+            "label": "userNtrDeposits",
+            "offset": 0,
+            "slot": "163",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:37"
+          },
+          {
+            "label": "referralRate",
+            "offset": 0,
+            "slot": "164",
+            "type": "t_array(t_uint16)6_storage",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:39"
+          },
+          {
+            "label": "roundInfo",
+            "offset": 0,
+            "slot": "165",
+            "type": "t_array(t_struct(RoundInfo)4477_storage)3_storage",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:41"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_struct(RoundInfo)4477_storage)3_storage": {
+            "label": "struct IDeXaPresale.RoundInfo[3]",
+            "numberOfBytes": "1344"
+          },
+          "t_array(t_uint16)6_storage": {
+            "label": "uint16[6]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(ContributionInfo)4443_storage)": {
+            "label": "mapping(address => struct IDeXaPresale.ContributionInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(ContributionInfo)4443_storage": {
+            "label": "struct IDeXaPresale.ContributionInfo",
+            "members": [
+              {
+                "label": "contributedBusdAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "contributedNtrAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "purchaseTimeForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "purchaseTimeForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "claimedTokenAmountForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "claimedTokenAmountForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "totalClaimableTokenAmountForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "totalClaimableTokenAmountForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "lastClaimedTimeForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "lastClaimedTimeForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "9"
+              }
+            ],
+            "numberOfBytes": "320"
+          },
+          "t_struct(RoundInfo)4477_storage": {
+            "label": "struct IDeXaPresale.RoundInfo",
+            "members": [
+              {
+                "label": "priceForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "priceForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "startTime",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "endTime",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "lockMonths",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "maxDexaAmountToSell",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "busdEnabled",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "ntrEnabled",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "6"
+              },
+              {
+                "label": "busdRaised",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "ntrRaised",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "minContributionForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "maxContributionForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "minContributionForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "11"
+              },
+              {
+                "label": "maxContributionForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "12"
+              },
+              {
+                "label": "contributions",
+                "type": "t_mapping(t_address,t_struct(ContributionInfo)4443_storage)",
+                "offset": 0,
+                "slot": "13"
+              }
+            ],
+            "numberOfBytes": "448"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "9a3dd599b92bf9d5faaf55a6a383dc48db67eb5f645560c51ac1b4624bd93f07": {
+      "address": "0x54Cc93db1e79F06b5d5Aade9a9F798d32633EAE5",
+      "txHash": "0x5f8724a2b8619620bdf313582058a16d4d8787a18e8904b678282d917440ec48",
+      "layout": {
+        "solcVersion": "0.8.13",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol:80"
+          },
+          {
+            "label": "releaseMonth",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_uint32",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:15"
+          },
+          {
+            "label": "deXa",
+            "offset": 4,
+            "slot": "151",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:17"
+          },
+          {
+            "label": "coreTeamAddress",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:19"
+          },
+          {
+            "label": "companyAddress",
+            "offset": 0,
+            "slot": "153",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:20"
+          },
+          {
+            "label": "busd",
+            "offset": 0,
+            "slot": "154",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:22"
+          },
+          {
+            "label": "ntr",
+            "offset": 0,
+            "slot": "155",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:23"
+          },
+          {
+            "label": "register",
+            "offset": 0,
+            "slot": "156",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:24"
+          },
+          {
+            "label": "busdBalanceForReward",
+            "offset": 0,
+            "slot": "157",
+            "type": "t_uint256",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:26"
+          },
+          {
+            "label": "busdAmountForCoreTeam",
+            "offset": 0,
+            "slot": "158",
+            "type": "t_uint256",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:31"
+          },
+          {
+            "label": "busdAmountForOwner",
+            "offset": 0,
+            "slot": "159",
+            "type": "t_uint256",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:32"
+          },
+          {
+            "label": "percentForCoreTeam",
+            "offset": 0,
+            "slot": "160",
+            "type": "t_uint256",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:33"
+          },
+          {
+            "label": "refRewardByBUSD",
+            "offset": 0,
+            "slot": "161",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:35"
+          },
+          {
+            "label": "userBusdDeposits",
+            "offset": 0,
+            "slot": "162",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:36"
+          },
+          {
+            "label": "userNtrDeposits",
+            "offset": 0,
+            "slot": "163",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:37"
+          },
+          {
+            "label": "referralRate",
+            "offset": 0,
+            "slot": "164",
+            "type": "t_array(t_uint16)6_storage",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:39"
+          },
+          {
+            "label": "roundInfo",
+            "offset": 0,
+            "slot": "165",
+            "type": "t_array(t_struct(RoundInfo)4479_storage)3_storage",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:41"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_struct(RoundInfo)4479_storage)3_storage": {
+            "label": "struct IDeXaPresale.RoundInfo[3]",
+            "numberOfBytes": "1344"
+          },
+          "t_array(t_uint16)6_storage": {
+            "label": "uint16[6]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(ContributionInfo)4445_storage)": {
+            "label": "mapping(address => struct IDeXaPresale.ContributionInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(ContributionInfo)4445_storage": {
+            "label": "struct IDeXaPresale.ContributionInfo",
+            "members": [
+              {
+                "label": "contributedBusdAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "contributedNtrAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "purchaseTimeForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "purchaseTimeForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "claimedTokenAmountForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "claimedTokenAmountForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "totalClaimableTokenAmountForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "totalClaimableTokenAmountForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "lastClaimedTimeForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "lastClaimedTimeForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "9"
+              }
+            ],
+            "numberOfBytes": "320"
+          },
+          "t_struct(RoundInfo)4479_storage": {
+            "label": "struct IDeXaPresale.RoundInfo",
+            "members": [
+              {
+                "label": "priceForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "priceForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "startTime",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "endTime",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "lockMonths",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "maxDexaAmountToSell",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "busdEnabled",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "ntrEnabled",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "6"
+              },
+              {
+                "label": "busdRaised",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "ntrRaised",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "minContributionForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "maxContributionForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "minContributionForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "11"
+              },
+              {
+                "label": "maxContributionForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "12"
+              },
+              {
+                "label": "contributions",
+                "type": "t_mapping(t_address,t_struct(ContributionInfo)4445_storage)",
+                "offset": 0,
+                "slot": "13"
+              }
+            ],
+            "numberOfBytes": "448"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "31b49778bd87c7646eb0e004b7ec1d7cece0c64dd52b12c55906abeb2e7e1843": {
+      "address": "0xfd803a32808A11A284ee8AE8997492aef5aB8ECE",
+      "txHash": "0xf0480f59d1cbadbeaf9fcf09f79cc1f935c4985141eebaa8dd160dfd2f42e95d",
+      "layout": {
+        "solcVersion": "0.8.13",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol:80"
+          },
+          {
+            "label": "releaseMonth",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_uint32",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:15"
+          },
+          {
+            "label": "deXa",
+            "offset": 4,
+            "slot": "151",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:17"
+          },
+          {
+            "label": "coreTeamAddress",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:19"
+          },
+          {
+            "label": "companyAddress",
+            "offset": 0,
+            "slot": "153",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:20"
+          },
+          {
+            "label": "busd",
+            "offset": 0,
+            "slot": "154",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:22"
+          },
+          {
+            "label": "ntr",
+            "offset": 0,
+            "slot": "155",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:23"
+          },
+          {
+            "label": "register",
+            "offset": 0,
+            "slot": "156",
+            "type": "t_address",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:24"
+          },
+          {
+            "label": "busdBalanceForReward",
+            "offset": 0,
+            "slot": "157",
+            "type": "t_uint256",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:26"
+          },
+          {
+            "label": "busdAmountForCoreTeam",
+            "offset": 0,
+            "slot": "158",
+            "type": "t_uint256",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:31"
+          },
+          {
+            "label": "busdAmountForOwner",
+            "offset": 0,
+            "slot": "159",
+            "type": "t_uint256",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:32"
+          },
+          {
+            "label": "percentForCoreTeam",
+            "offset": 0,
+            "slot": "160",
+            "type": "t_uint256",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:33"
+          },
+          {
+            "label": "refRewardByBUSD",
+            "offset": 0,
+            "slot": "161",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:35"
+          },
+          {
+            "label": "userBusdDeposits",
+            "offset": 0,
+            "slot": "162",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:36"
+          },
+          {
+            "label": "userNtrDeposits",
+            "offset": 0,
+            "slot": "163",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:37"
+          },
+          {
+            "label": "referralRate",
+            "offset": 0,
+            "slot": "164",
+            "type": "t_array(t_uint16)6_storage",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:39"
+          },
+          {
+            "label": "roundInfo",
+            "offset": 0,
+            "slot": "165",
+            "type": "t_array(t_struct(RoundInfo)4478_storage)3_storage",
+            "contract": "DeXaPresale",
+            "src": "src/DeXaPresale.sol:41"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_struct(RoundInfo)4478_storage)3_storage": {
+            "label": "struct IDeXaPresale.RoundInfo[3]",
+            "numberOfBytes": "1344"
+          },
+          "t_array(t_uint16)6_storage": {
+            "label": "uint16[6]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(ContributionInfo)4444_storage)": {
+            "label": "mapping(address => struct IDeXaPresale.ContributionInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(ContributionInfo)4444_storage": {
+            "label": "struct IDeXaPresale.ContributionInfo",
+            "members": [
+              {
+                "label": "contributedBusdAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "contributedNtrAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "purchaseTimeForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "purchaseTimeForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "claimedTokenAmountForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "claimedTokenAmountForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "totalClaimableTokenAmountForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "totalClaimableTokenAmountForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "lastClaimedTimeForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "lastClaimedTimeForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "9"
+              }
+            ],
+            "numberOfBytes": "320"
+          },
+          "t_struct(RoundInfo)4478_storage": {
+            "label": "struct IDeXaPresale.RoundInfo",
+            "members": [
+              {
+                "label": "priceForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "priceForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "startTime",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "endTime",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "lockMonths",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "maxDexaAmountToSell",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "busdEnabled",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "ntrEnabled",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "6"
+              },
+              {
+                "label": "busdRaised",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "ntrRaised",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "minContributionForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "maxContributionForBusd",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "minContributionForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "11"
+              },
+              {
+                "label": "maxContributionForNtr",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "12"
+              },
+              {
+                "label": "contributions",
+                "type": "t_mapping(t_address,t_struct(ContributionInfo)4444_storage)",
                 "offset": 0,
                 "slot": "13"
               }
