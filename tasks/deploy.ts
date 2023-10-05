@@ -32,22 +32,21 @@ export default async function deploy(
   //   "", // company address
   // ];
 
-  const instance = await upgrades.deployProxy(DeXaPresale, args, {
-    initializer: "initialize",
-  });
-  await instance.waitForDeployment();
+  // const instance = await upgrades.deployProxy(DeXaPresale, args, {
+  //   initializer: "initialize",
+  // });
+  // await instance.waitForDeployment();
 
-  // await instance.deployed();
-  await delay(26000);
-  console.log("Deployed Address", instance.target);
+  // await delay(26000);
+  // console.log("Deployed Address", instance.target);
 
   // Upgrading
-  // const DeXaPresaleV2 = await ethers.getContractFactory("DeXaPresale");
-  // const upgraded = await upgrades.upgradeProxy(
-  //   "0x719b7451Bc4247cd4424d92a6D441FFAEDD50d34",
-  //   DeXaPresaleV2
-  // );
-  // console.log("Deployed Address", upgraded.address);
+  const DeXaPresaleV2 = await ethers.getContractFactory("DeXaPresale");
+  const instance = await upgrades.upgradeProxy(
+    "0x5Eaf2D08FA62220AC064Df5e47521cB7cc16F964",
+    DeXaPresaleV2
+  ); //testnet
+  console.log("Deployed Address", instance.target);
 
   if (hre.network.name != "hardhat") {
     await hre.run("verify:verify", {
