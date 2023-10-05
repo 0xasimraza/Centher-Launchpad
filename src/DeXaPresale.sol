@@ -217,7 +217,7 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         info.busdRaised = info.busdRaised + _busdAmount;
         require(!hasSoldOut(uint8(_round), true), "Dexa is already sold out!");
 
-        info.contributions[msg.sender].contributedBusdAmount += _busdAmount;
+        info.contributions[_user].contributedBusdAmount += _busdAmount;
         if (info.contributions[_user].purchaseTimeForBusd == 0) {
             info.contributions[_user].purchaseTimeForBusd = _purchaseTime;
         }
@@ -322,8 +322,8 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
             require(!hasSoldOut(uint8(_rounds[x]), true), "Dexa is already sold out!");
 
             info.contributions[_users[x]].contributedBusdAmount += _busdAmounts[x];
-            if (info.contributions[msg.sender].purchaseTimeForBusd == 0) {
-                info.contributions[msg.sender].purchaseTimeForBusd = _purchaseTime;
+            if (info.contributions[_users[x]].purchaseTimeForBusd == 0) {
+                info.contributions[_users[x]].purchaseTimeForBusd = _purchaseTime;
             }
 
             uint256 busdForCoreTeam;
