@@ -838,6 +838,119 @@ contract TokenTest is Test {
         assertEq(deXa.balanceOf(user1), 937500000000000000, "Not equal");
     }
 
+    function testBlacklistingFeature1() public {
+        vm.startPrank(owner);
+        address[] memory blacklisted = new address[](1);
+        blacklisted[0]=( 0x2B5AD5c4795c026514f8317c7a215E218DcCD6cF);
+        deXaPresale.setBlacklistedUsers(blacklisted);
+        
+        changePrank(user1);
+        busd.transfer(address(1), 500000 ether);
+        changePrank(user2);
+        busd.transfer(address(1), 500000 ether);
+        changePrank(owner);
+
+        busd.approve(address(deXaPresale), 10000e18);
+        deXaPresale.depositBusdForReward(10000e18);
+
+        uint256 ownerDexaBalanceDump = deXa.balanceOf(owner);
+        deXa.transfer(address(1), ownerDexaBalanceDump);
+
+        uint256 ownerBusdBalanceDump = busd.balanceOf(owner);
+        busd.transfer(address(1), ownerBusdBalanceDump);
+
+        uint16[] memory _rates = new uint16[](6);
+        _rates[0] = (600);
+        _rates[1] = (400);
+        _rates[2] = (200);
+        _rates[3] = (200);
+        _rates[4] = (200);
+        _rates[5] = (200);
+        deXaPresale.setReferralRate(_rates);
+        deal({token: address(deXa), to: address(deXaPresale), give: 50000000e18});
+
+        deXaPresale.setRoundInfoForBusd(
+            0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 4, 50000000e18, 150e18, 1500e18
+        );
+
+        uint256 creationTimeOfRound = block.timestamp;
+
+        address[] memory _users = new address[](1);
+        // _users[0] = address(user1);
+        _users[0] = address(user2);
+
+        uint256[] memory _allowances = new uint256[](1);
+        // _allowances[0] = uint256(1500e18);
+        _allowances[0] = uint256(1500e18);
+
+        uint256[] memory _rounds = new uint256[](1);
+        _rounds[0] = 0;
+        // _rounds[1] = 0;
+
+        address[] memory referrerAddresses = register.getReferrerAddresses(user2);
+
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
+
+        // level1 amount check
+        assertEq(busd.balanceOf(referrerAddresses[0]), 0, "Amount not match");
+        // level2 amount check
+        assertEq(busd.balanceOf(referrerAddresses[1]), 60000000000000000000, "Amount not match");
+    }
+
+    function testBlacklistingFeature2() public {
+        vm.startPrank(owner);
+        address[] memory blacklisted = new address[](1);
+        blacklisted[0]=( 0x2B5AD5c4795c026514f8317c7a215E218DcCD6cF);
+        deXaPresale.setBlacklistedUsers(blacklisted);
+        
+        changePrank(user1);
+        busd.transfer(address(1), 500000 ether);
+        changePrank(user2);
+        busd.transfer(address(1), 500000 ether);
+        changePrank(owner);
+
+        busd.approve(address(deXaPresale), 10000e18);
+        deXaPresale.depositBusdForReward(10000e18);
+
+        uint256 ownerDexaBalanceDump = deXa.balanceOf(owner);
+        deXa.transfer(address(1), ownerDexaBalanceDump);
+
+        uint256 ownerBusdBalanceDump = busd.balanceOf(owner);
+        busd.transfer(address(1), ownerBusdBalanceDump);
+
+        uint16[] memory _rates = new uint16[](6);
+        _rates[0] = (600);
+        _rates[1] = (400);
+        _rates[2] = (200);
+        _rates[3] = (200);
+        _rates[4] = (200);
+        _rates[5] = (200);
+        deXaPresale.setReferralRate(_rates);
+        deal({token: address(deXa), to: address(deXaPresale), give: 50000000e18});
+
+        deXaPresale.setRoundInfoForBusd(
+            0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 4, 50000000e18, 150e18, 1500e18
+        );
+
+        uint256 creationTimeOfRound = block.timestamp;
+
+        address[] memory _users = new address[](2);
+        _users[0] = address(user1);
+        _users[1] = address(user2);
+
+        uint256[] memory _allowances = new uint256[](2);
+        _allowances[0] = uint256(1500e18);
+        _allowances[1] = uint256(1500e18);
+
+        uint256[] memory _rounds = new uint256[](2);
+        _rounds[0] = 0;
+        _rounds[1] = 1;
+
+        vm.expectRevert("Blacklisted User");
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
+
+    }
+
     // function testThreeRoundsPuchaseWithBusdAndNtrWithTenMonthsRelease() public {
     //     vm.startPrank(owner);
     //     deal({token: address(deXa), to: address(deXaPresale), give: 50000000e18});
