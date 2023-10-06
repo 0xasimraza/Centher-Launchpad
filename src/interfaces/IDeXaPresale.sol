@@ -26,6 +26,8 @@ interface IDeXaPresale {
     event BusdRewardAmountDeposited(uint256 depositedAmount, uint256 currentBalance);
     event BusdRewardAmountWithdrawn(uint256 withdrawnAmount);
 
+    event BlacklistedUser(address user, bool status);
+
     struct ContributionInfo {
         uint256 contributedBusdAmount;
         uint256 contributedNtrAmount;

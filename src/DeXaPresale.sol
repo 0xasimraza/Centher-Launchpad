@@ -6,10 +6,14 @@ import "./interfaces/IRegistration.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "@openzeppelinUpgradeable/contracts/access/OwnableUpgradeable.sol";
-import "@openzeppelinUpgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
+// import "@openzeppelinUpgradeable/contracts/access/OwnableUpgradeable.sol";
+// import "@openzeppelinUpgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 
-contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPresale {
+// contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPresale {
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     uint8 public constant REFERRAL_DEEP = 6;
 
     uint32 public releaseMonth;
@@ -40,21 +44,36 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
 
     RoundInfo[3] public roundInfo;
 
+    mapping(address => bool) public isBlacklisted;
+
     modifier onlyRegisterUser() {
         require(IRegistration(register).isRegistered(msg.sender), "No registered.");
         _;
     }
 
-    function initialize(
-        address _deXa,
-        address _ntr,
-        address _busd,
-        address _register,
-        address _coreTeam,
-        address _company
-    ) public initializer {
-        __Ownable_init();
-        __ReentrancyGuard_init();
+    // function initialize(
+    //     address _deXa,
+    //     address _ntr,
+    //     address _busd,
+    //     address _register,
+    //     address _coreTeam,
+    //     address _company
+    // ) public initializer {
+    //     __Ownable_init();
+    //     __ReentrancyGuard_init();
+    //     deXa = _deXa;
+    //     ntr = _ntr;
+    //     busd = _busd;
+    //     register = _register;
+    //     coreTeamAddress = _coreTeam;
+    //     companyAddress = _company;
+    //     percentForCoreTeam = 1000;
+    //     releaseMonth = 10;
+    // }
+
+    constructor(address _deXa, address _ntr, address _busd, address _register, address _coreTeam, address _company)
+        Ownable()
+    {
         deXa = _deXa;
         ntr = _ntr;
         busd = _busd;
@@ -62,7 +81,7 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         coreTeamAddress = _coreTeam;
         companyAddress = _company;
         percentForCoreTeam = 1000;
-        releaseMonth = 10;
+        releaseMonth = 8; //10;
     }
 
     function tokenPurchaseWithBUSD(uint256 _busdAmount) external override onlyRegisterUser {
@@ -71,6 +90,8 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
 
         RoundInfo storage info = roundInfo[uint8(_round)];
         require(info.busdEnabled, "Not enable to purchase with BUSD");
+
+        require(!isBlacklisted[msg.sender], "Blacklisted User");
 
         require(_busdAmount >= info.minContributionForBusd, "Min contribution criteria not met");
         require(_busdAmount <= info.maxContributionForBusd, "Max contribution criteria not met");
@@ -107,15 +128,17 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
                 break;
             }
             uint256 bonus;
-            unchecked {
-                bonus = (_busdAmount * referralRate[i]) / _MULTIPLER;
-                refRewardByBUSD[referrers[i]] += bonus;
+            if (!isBlacklisted[referrers[i]]) {
+                unchecked {
+                    bonus = (_busdAmount * referralRate[i]) / _MULTIPLER;
+                    refRewardByBUSD[referrers[i]] += bonus;
 
-                busdForOwner -= bonus;
+                    busdForOwner -= bonus;
+                }
+
+                IERC20(busd).transfer(referrers[i], bonus);
+                emit SetRefRewardBUSD(referrers[i], msg.sender, uint8(i + 1), uint8(_round), bonus);
             }
-
-            IERC20(busd).transfer(referrers[i], bonus);
-            emit SetRefRewardBUSD(referrers[i], msg.sender, uint8(i + 1), uint8(_round), bonus);
         }
 
         busdAmountForOwner += busdForOwner;
@@ -129,6 +152,8 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
 
         RoundInfo storage info = roundInfo[uint8(_round)];
         require(info.ntrEnabled, "Not enable to purchase with NTR");
+
+        require(!isBlacklisted[msg.sender], "Blacklisted User");
 
         require(_ntrAmount >= info.minContributionForNtr, "Min contribution criteria not met");
         require(_ntrAmount <= info.maxContributionForNtr, "Max contribution criteria not met");
@@ -209,6 +234,8 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         RoundInfo storage info = roundInfo[uint8(_round)];
         require(info.busdEnabled, "Not enable to purchase with BUSD");
 
+        require(!isBlacklisted[_user], "Blacklisted User");
+
         require(_busdAmount >= info.minContributionForBusd, "Min contribution criteria not met");
         require(_busdAmount <= info.maxContributionForBusd, "Max contribution criteria not met");
         require(!userBusdDeposits[_user], "Already Deposited");
@@ -241,17 +268,19 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
             if (referrers[i] == address(0)) {
                 break;
             }
-            uint256 bonus = (_busdAmount * referralRate[i]) / _MULTIPLER;
-            require(bonus <= busdBalanceForReward, "Not enough funds for reward");
+            if (!isBlacklisted[referrers[i]]) {
+                uint256 bonus = (_busdAmount * referralRate[i]) / _MULTIPLER;
+                require(bonus <= busdBalanceForReward, "Not enough funds for reward");
 
-            unchecked {
-                refRewardByBUSD[referrers[i]] += bonus;
-                busdForOwner -= bonus;
-                busdBalanceForReward -= bonus;
+                unchecked {
+                    refRewardByBUSD[referrers[i]] += bonus;
+                    busdForOwner -= bonus;
+                    busdBalanceForReward -= bonus;
+                }
+
+                IERC20(busd).transfer(referrers[i], bonus);
+                emit SetRefRewardBUSD(referrers[i], _user, uint8(i + 1), uint8(_round), bonus);
             }
-
-            IERC20(busd).transfer(referrers[i], bonus);
-            emit SetRefRewardBUSD(referrers[i], _user, uint8(i + 1), uint8(_round), bonus);
         }
 
         busdAmountForOwner += busdForOwner;
@@ -268,6 +297,8 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
 
         RoundInfo storage info = roundInfo[uint8(_round)];
         require(info.ntrEnabled, "Not enable to purchase with NTR");
+
+        require(!isBlacklisted[_user], "Blacklisted User");
 
         require(_ntrAmount >= info.minContributionForNtr, "Min contribution criteria not met");
         require(_ntrAmount <= info.maxContributionForNtr, "Max contribution criteria not met");
@@ -312,6 +343,8 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
             RoundInfo storage info = roundInfo[uint8(_rounds[x])];
             require(info.busdEnabled, "Not enable to purchase with BUSD");
 
+            require(!isBlacklisted[_users[x]], "Blacklisted User");
+
             require(_busdAmounts[x] >= info.minContributionForBusd, "Min contribution criteria not met");
             require(_busdAmounts[x] <= info.maxContributionForBusd, "Max contribution criteria not met");
 
@@ -348,17 +381,19 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
                 if (referrers[i] == address(0)) {
                     break;
                 }
-                uint256 bonus = (_busdAmounts[x] * referralRate[i]) / _MULTIPLER;
-                require(bonus <= busdBalanceForReward, "Not enough funds for reward");
+                if (!isBlacklisted[referrers[i]]) {
+                    uint256 bonus = (_busdAmounts[x] * referralRate[i]) / _MULTIPLER;
+                    require(bonus <= busdBalanceForReward, "Not enough funds for reward");
 
-                unchecked {
-                    refRewardByBUSD[referrers[i]] += bonus;
-                    busdForOwner -= bonus;
-                    busdBalanceForReward -= bonus;
+                    unchecked {
+                        refRewardByBUSD[referrers[i]] += bonus;
+                        busdForOwner -= bonus;
+                        busdBalanceForReward -= bonus;
+                    }
+
+                    IERC20(busd).transfer(referrers[i], bonus);
+                    emit SetRefRewardBUSD(referrers[i], _users[x], uint8(i + 1), uint8(_rounds[x]), bonus);
                 }
-
-                IERC20(busd).transfer(referrers[i], bonus);
-                emit SetRefRewardBUSD(referrers[i], _users[x], uint8(i + 1), uint8(_rounds[x]), bonus);
             }
 
             busdAmountForOwner += busdForOwner;
@@ -382,6 +417,8 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
 
             RoundInfo storage info = roundInfo[uint8(_rounds[x])];
             require(info.ntrEnabled, "Not enable to purchase with NTR");
+
+            require(!isBlacklisted[_users[x]], "Blacklisted User");
 
             require(_ntrAmounts[x] >= info.minContributionForNtr, "Min contribution criteria not met");
             require(_ntrAmounts[x] <= info.maxContributionForNtr, "Max contribution criteria not met");
@@ -524,6 +561,14 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         }
         for (uint8 i = 0; i < _rates.length; i++) {
             referralRate[i] = _rates[i];
+        }
+    }
+
+    function setBlacklistedUsers(address[] memory _blacklisted) external onlyOwner {
+        for (uint256 i = 0; i < _blacklisted.length; i++) {
+            require(!isBlacklisted[_blacklisted[i]], "");
+            isBlacklisted[_blacklisted[i]] = true;
+            emit BlacklistedUser(_blacklisted[i], true);
         }
     }
 
