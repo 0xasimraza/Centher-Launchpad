@@ -117,6 +117,7 @@ interface IDeXaPresale {
         address[] calldata _user,
         uint256[] calldata _amount,
         uint256[] memory _rounds,
+        uint256[] memory _busdAmountsForReward,
         uint256 _purchaseTime
     ) external;
 

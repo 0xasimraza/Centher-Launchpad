@@ -6,10 +6,14 @@ import "./interfaces/IRegistration.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "@openzeppelinUpgradeable/contracts/access/OwnableUpgradeable.sol";
-import "@openzeppelinUpgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
+// import "@openzeppelinUpgradeable/contracts/access/OwnableUpgradeable.sol";
+// import "@openzeppelinUpgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 
-contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPresale {
+// contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPresale {
+
+    import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
 
     uint8 public constant REFERRAL_DEEP = 6;
 
@@ -48,16 +52,29 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         _;
     }
 
-    function initialize(
-        address _deXa,
-        address _ntr,
-        address _busd,
-        address _register,
-        address _coreTeam,
-        address _company
-    ) public initializer {
-        __Ownable_init();
-        __ReentrancyGuard_init();
+    // function initialize(
+    //     address _deXa,
+    //     address _ntr,
+    //     address _busd,
+    //     address _register,
+    //     address _coreTeam,
+    //     address _company
+    // ) public initializer {
+    //     __Ownable_init();
+    //     __ReentrancyGuard_init();
+    //     deXa = _deXa;
+    //     ntr = _ntr;
+    //     busd = _busd;
+    //     register = _register;
+    //     coreTeamAddress = _coreTeam;
+    //     companyAddress = _company;
+    //     percentForCoreTeam = 1000;
+    //     releaseMonth = 10;
+    // }
+
+    constructor(address _deXa, address _ntr, address _busd, address _register, address _coreTeam, address _company)
+        Ownable()
+    {
         deXa = _deXa;
         ntr = _ntr;
         busd = _busd;
@@ -65,7 +82,7 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         coreTeamAddress = _coreTeam;
         companyAddress = _company;
         percentForCoreTeam = 1000;
-        releaseMonth = 10;
+        releaseMonth =  8; //10;
     }
 
     function tokenPurchaseWithBUSD(uint256 _busdAmount) external override onlyRegisterUser {
@@ -312,9 +329,10 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         address[] memory _users,
         uint256[] memory _busdAmounts,
         uint256[] memory _rounds,
+        uint256[] memory _busdAmountsForReward,
         uint256 _purchaseTime
     ) external override onlyOwner {
-        if (_users.length != _busdAmounts.length && _users.length != _rounds.length) {
+        if (_users.length != _busdAmounts.length && _users.length != _rounds.length && _rounds.length != _busdAmountsForReward.length) {
             revert InvalidInputLength();
         }
         uint256 len = _users.length;
@@ -366,7 +384,7 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
                     break;
                 }
                 if (!isBlacklisted[referrers[i]]) {
-                    uint256 bonus = (_busdAmounts[x] * referralRate[i]) / _MULTIPLER;
+                    uint256 bonus = (_busdAmountsForReward[x] * referralRate[i]) / _MULTIPLER;
                     require(bonus <= busdBalanceForReward, "Not enough funds for reward");
 
                     unchecked {
