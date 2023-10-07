@@ -113,7 +113,7 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, _allowances, creationTimeOfRound);
     }
 
     function testNtrUsersAllowance() public {
@@ -262,7 +262,7 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, _allowances, creationTimeOfRound);
 
         changePrank(user1);
 
@@ -358,7 +358,7 @@ contract TokenTest is Test {
 
         address[] memory referrerAddresses = register.getReferrerAddresses(user2);
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, _allowances, creationTimeOfRound);
 
         // level1 amount check
         assertEq(busd.balanceOf(referrerAddresses[0]), 9000000000000000000, "Amount not match");
@@ -412,7 +412,7 @@ contract TokenTest is Test {
 
         address[] memory referrerAddresses = register.getReferrerAddresses(user2);
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, _allowances, creationTimeOfRound);
 
         // level1 amount check
         assertEq(busd.balanceOf(referrerAddresses[0]), 90000000000000000000, "Amount not match");
@@ -521,10 +521,10 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, _allowances, creationTimeOfRound);
 
         vm.expectRevert("Already Deposited");
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, _allowances, creationTimeOfRound);
     }
 
     function testReinvestForUsersByOwner() public {
@@ -711,7 +711,7 @@ contract TokenTest is Test {
         _rounds[0] = 0;
         _rounds[1] = 0;
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, _allowances, creationTimeOfRound);
 
         vm.warp(block.timestamp + 30 days * 12);
         uint256 totalClaimableAmount = (_amounts * 1e18) / 800000000000000000;
@@ -889,7 +889,7 @@ contract TokenTest is Test {
 
         address[] memory referrerAddresses = register.getReferrerAddresses(user2);
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, _allowances, creationTimeOfRound);
 
         // level1 amount check
         assertEq(busd.balanceOf(referrerAddresses[0]), 0, "Amount not match");
@@ -947,7 +947,7 @@ contract TokenTest is Test {
         _rounds[1] = 1;
 
         vm.expectRevert("Blacklisted User");
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, _allowances, creationTimeOfRound);
     }
 
     function testBlacklistingFeature3() public {
@@ -1085,13 +1085,134 @@ contract TokenTest is Test {
 
         address[] memory referrerAddresses = register.getReferrerAddresses(user2);
 
-        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, creationTimeOfRound);
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, _allowances, creationTimeOfRound);
 
         // level1 amount check
         assertEq(busd.balanceOf(referrerAddresses[0]), 0, "Amount not match");
 
         // // level2 amount check
         assertEq(busd.balanceOf(referrerAddresses[1]), 30000000000000000000, "Amount not match");
+    }
+
+    function testBatchBusdTransfers1() public {
+        vm.startPrank(owner);
+
+        changePrank(user1);
+        busd.transfer(address(1), 500000 ether);
+        changePrank(user2);
+        busd.transfer(address(1), 500000 ether);
+        changePrank(owner);
+
+        busd.approve(address(deXaPresale), 10000e18);
+        deXaPresale.depositBusdForReward(10000e18);
+
+        uint256 ownerDexaBalanceDump = deXa.balanceOf(owner);
+        deXa.transfer(address(1), ownerDexaBalanceDump);
+
+        uint256 ownerBusdBalanceDump = busd.balanceOf(owner);
+        busd.transfer(address(1), ownerBusdBalanceDump);
+
+        uint16[] memory _rates = new uint16[](6);
+        _rates[0] = (600);
+        _rates[1] = (400);
+        _rates[2] = (200);
+        _rates[3] = (200);
+        _rates[4] = (200);
+        _rates[5] = (200);
+
+        deXaPresale.setReferralRate(_rates);
+        deal({token: address(deXa), to: address(deXaPresale), give: 50000000e18});
+
+        deXaPresale.setRoundInfoForBusd(
+            0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 4, 50000000e18, 150e18, 1500e18
+        );
+
+        uint256 creationTimeOfRound = block.timestamp;
+
+        address[] memory _users = new address[](2);
+        _users[0] = address(user1);
+        _users[1] = address(other);
+
+        uint256[] memory _allowances = new uint256[](2);
+        _allowances[0] = uint256(1500e18);
+        _allowances[1] = uint256(1500e18);
+
+        uint256[] memory _rounds = new uint256[](2);
+        _rounds[0] = 0;
+        _rounds[1] = 0;
+
+        uint256[] memory _amountForReward = new uint256[](2);
+        _amountForReward[0] = uint256(0);
+        _amountForReward[1] = uint256(0);
+
+        address[] memory referrerAddresses = register.getReferrerAddresses(user2);
+
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, _amountForReward, creationTimeOfRound);
+
+        // level1 amount check
+        assertEq(busd.balanceOf(referrerAddresses[0]), 0, "Amount not match");
+
+        // // level2 amount check
+        assertEq(busd.balanceOf(referrerAddresses[1]), 0, "Amount not match");
+    }
+
+     function testBatchBusdTransfers2() public {
+        vm.startPrank(owner);
+
+        changePrank(user1);
+        busd.transfer(address(1), 500000 ether);
+        changePrank(user2);
+        busd.transfer(address(1), 500000 ether);
+        changePrank(owner);
+
+        busd.approve(address(deXaPresale), 10000e18);
+        deXaPresale.depositBusdForReward(10000e18);
+
+        uint256 ownerDexaBalanceDump = deXa.balanceOf(owner);
+        deXa.transfer(address(1), ownerDexaBalanceDump);
+
+        uint256 ownerBusdBalanceDump = busd.balanceOf(owner);
+        busd.transfer(address(1), ownerBusdBalanceDump);
+
+        uint16[] memory _rates = new uint16[](6);
+        _rates[0] = (600);
+        _rates[1] = (400);
+        _rates[2] = (200);
+        _rates[3] = (200);
+        _rates[4] = (200);
+        _rates[5] = (200);
+
+        deXaPresale.setReferralRate(_rates);
+        deal({token: address(deXa), to: address(deXaPresale), give: 50000000e18});
+
+        deXaPresale.setRoundInfoForBusd(
+            0, 800000000000000000, block.timestamp, block.timestamp + 30 days, 4, 50000000e18, 150e18, 1500e18
+        );
+
+        uint256 creationTimeOfRound = block.timestamp;
+
+        address[] memory _users = new address[](2);
+        _users[0] = address(user1);
+        _users[1] = address(other);
+
+        uint256[] memory _allowances = new uint256[](2);
+        _allowances[0] = uint256(1500e18);
+        _allowances[1] = uint256(1500e18);
+
+        uint256[] memory _rounds = new uint256[](2);
+        _rounds[0] = 0;
+        _rounds[1] = 0;
+
+        uint256[] memory _amountForReward = new uint256[](2);
+        _amountForReward[0] = uint256(750e18);
+        _amountForReward[1] = uint256(0);
+
+        address[] memory referrerAddresses = register.getReferrerAddresses(user2);
+
+        deXaPresale.batchAllowanceToBusdUsers(_users, _allowances, _rounds, _amountForReward, creationTimeOfRound);
+
+        assertEq(busd.balanceOf(referrerAddresses[0]), 0, "Amount not match");
+        assertEq(busd.balanceOf(referrerAddresses[1]), 45e18, "Amount not match");
     }
 
     // function testThreeRoundsPuchaseWithBusdAndNtrWithTenMonthsRelease() public {
