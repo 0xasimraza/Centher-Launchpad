@@ -74,8 +74,6 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         RoundInfo storage info = roundInfo[uint8(_round)];
         require(info.busdEnabled, "Not enable to purchase with BUSD");
 
-        require(!isBlacklisted[msg.sender], "Blacklisted User");
-
         require(_busdAmount >= info.minContributionForBusd, "Min contribution criteria not met");
         require(_busdAmount <= info.maxContributionForBusd, "Max contribution criteria not met");
 
@@ -135,8 +133,6 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
 
         RoundInfo storage info = roundInfo[uint8(_round)];
         require(info.ntrEnabled, "Not enable to purchase with NTR");
-
-        require(!isBlacklisted[msg.sender], "Blacklisted User");
 
         require(_ntrAmount >= info.minContributionForNtr, "Min contribution criteria not met");
         require(_ntrAmount <= info.maxContributionForNtr, "Max contribution criteria not met");
@@ -221,7 +217,7 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
 
         require(_busdAmount >= info.minContributionForBusd, "Min contribution criteria not met");
         require(_busdAmount <= info.maxContributionForBusd, "Max contribution criteria not met");
-        require(!userBusdDeposits[_user], "Already Deposited");
+        // require(!userBusdDeposits[_user], "Already Deposited");
         userBusdDeposits[_user] = true;
 
         info.busdRaised = info.busdRaised + _busdAmount;
@@ -286,7 +282,7 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         require(_ntrAmount >= info.minContributionForNtr, "Min contribution criteria not met");
         require(_ntrAmount <= info.maxContributionForNtr, "Max contribution criteria not met");
 
-        require(!userNtrDeposits[_user], "Already Deposited");
+        // require(!userNtrDeposits[_user], "Already Deposited");
         userNtrDeposits[_user] = true;
 
         info.ntrRaised = info.ntrRaised + _ntrAmount;
@@ -335,7 +331,7 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
             require(_busdAmounts[x] >= info.minContributionForBusd, "Min contribution criteria not met");
             require(_busdAmounts[x] <= info.maxContributionForBusd, "Max contribution criteria not met");
 
-            require(!userBusdDeposits[_users[x]], "Already Deposited");
+            // require(!userBusdDeposits[_users[x]], "Already Deposited");
             userBusdDeposits[_users[x]] = true;
 
             info.busdRaised = info.busdRaised + _busdAmounts[x];
@@ -410,7 +406,7 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
             require(_ntrAmounts[x] >= info.minContributionForNtr, "Min contribution criteria not met");
             require(_ntrAmounts[x] <= info.maxContributionForNtr, "Max contribution criteria not met");
 
-            require(!userNtrDeposits[_users[x]], "Already Deposited");
+            // require(!userNtrDeposits[_users[x]], "Already Deposited");
             userNtrDeposits[_users[x]] = true;
 
             info.ntrRaised = info.ntrRaised + _ntrAmounts[x];
