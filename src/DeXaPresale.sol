@@ -42,6 +42,8 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
 
     mapping(address => bool) public isBlacklisted;
 
+    bool private initialized;
+
     modifier onlyRegisterUser() {
         require(IRegistration(register).isRegistered(msg.sender), "No registered.");
         _;
@@ -55,6 +57,8 @@ contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPre
         address _coreTeam,
         address _company
     ) public initializer {
+        require(!initialized, "Contract instance has already been initialized");
+        initialized = true;
         __Ownable_init();
         __ReentrancyGuard_init();
         deXa = _deXa;
