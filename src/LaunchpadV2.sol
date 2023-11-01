@@ -189,9 +189,11 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
 
         presaleInfo[_token].contributions[uint8(_round)][msg.sender].contributedFund += _busdAmount;
         presaleInfo[_token].fundRaised[uint8(_round)] += _busdAmount;
+
         if (hasSoldOut(_token, uint8(_round))) {
             revert TokensAlreadySold();
         }
+
         if (presaleInfo[_token].contributions[uint8(_round)][msg.sender].purchaseTime == 0) {
             presaleInfo[_token].contributions[uint8(_round)][msg.sender].purchaseTime = block.timestamp;
         }
@@ -225,10 +227,9 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         if (!(_round == 0 || _round == 1 || _round == 2)) {
             revert IncorrectRoundsCount();
         }
-        if (hasSoldOut(_token, uint8(_round))) {
-            revert TokensAlreadySold();
-        }
+
         RoundInfo storage info = presaleInfo[_token].roundsInfo[uint8(_round)];
+
         if (presaleInfo[_token].params.fundType != FundType.BNB) {
             revert PurchaseWithOnlyBNB();
         }
@@ -243,6 +244,11 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
 
         presaleInfo[_token].contributions[uint8(_round)][msg.sender].contributedFund += _bnbAmount;
         presaleInfo[_token].fundRaised[uint8(_round)] += _bnbAmount;
+
+        if (hasSoldOut(_token, uint8(_round))) {
+            revert TokensAlreadySold();
+        }
+
         if (presaleInfo[_token].contributions[uint8(_round)][msg.sender].purchaseTime == 0) {
             presaleInfo[_token].contributions[uint8(_round)][msg.sender].purchaseTime = block.timestamp;
         }
@@ -278,7 +284,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
     function hasSoldOut(address _token, uint8 _round) public view returns (bool) {
         RoundInfo storage info = presaleInfo[_token].roundsInfo[_round];
         uint256 tokenAmount = presaleInfo[_token].fundRaised[_round] * 1e18 / info.pricePerToken;
-        console2.log("fundRaised: ", tokenAmount);
+
         if (tokenAmount >= info.tokensToSell) return true;
         else return false;
     }
