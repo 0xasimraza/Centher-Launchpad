@@ -638,8 +638,145 @@ contract LaunchpadV2Test is Test {
         assertEq(instance.createdPresale(_infoParams.token), false, " Created");
     }
 
+    // TestCases:: For Update Presale
+    function testShouldNotUpdatePresaleForDexaAgainstBUSD() public {
+        deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+        deal(user1, 5 ether);
+
+        vm.startPrank(user1);
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 500000e18,
+            maxTokensToSell: 1000000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            fundType: ILaunchpadV2.FundType.BUSD
+        });
+
+        ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
+        _roundsParams[0] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 86400),
+            endTime: (block.timestamp + 12 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 50000e18,
+            pricePerToken: 1e18
+        });
+        _roundsParams[1] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 12 weeks),
+            endTime: (block.timestamp + 24 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 25000e18,
+            pricePerToken: 1e18
+        });
+        _roundsParams[2] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 24 weeks),
+            endTime: (block.timestamp + 36 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 10000e18,
+            pricePerToken: 1e18
+        });
+        deXa.approve(address(instance), 1500000e18);
+        instance.createPresale{value: 0.001 ether}(_infoParams, _roundsParams);
+
+        assertEq(instance.createdPresale(_infoParams.token), true, "Not Created");
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams1 = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 5000000e18,
+            maxTokensToSell: 1000000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            fundType: ILaunchpadV2.FundType.BUSD
+        });
+        bytes4 selector = bytes4(keccak256("MaxValueGreaterThanMin()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
+        instance.updatePresale(_infoParams1, _roundsParams);
+    }
+
+    function testShouldNotUpdatePresaleDueToIncorrectSellValue() public {
+        deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+        deal(user1, 5 ether);
+
+        vm.startPrank(user1);
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 500000e18,
+            maxTokensToSell: 1000000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            fundType: ILaunchpadV2.FundType.BUSD
+        });
+
+        ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
+        _roundsParams[0] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 86400),
+            endTime: (block.timestamp + 12 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 50000e18,
+            pricePerToken: 1e18
+        });
+        _roundsParams[1] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 12 weeks),
+            endTime: (block.timestamp + 24 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 25000e18,
+            pricePerToken: 1e18
+        });
+        _roundsParams[2] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 24 weeks),
+            endTime: (block.timestamp + 36 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 10000e18,
+            pricePerToken: 1e18
+        });
+        deXa.approve(address(instance), 1500000e18);
+        instance.createPresale{value: 0.001 ether}(_infoParams, _roundsParams);
+
+        assertEq(instance.createdPresale(_infoParams.token), true, "Not Created");
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams1 = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 5000e18,
+            maxTokensToSell: 10000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            fundType: ILaunchpadV2.FundType.BUSD
+        });
+        bytes4 selector = bytes4(keccak256("IncorrectAmountToSell()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
+        instance.updatePresale(_infoParams1, _roundsParams);
+    }
+
     // TestCases:: For BUSD purchases
-    function testShouldPurchaseForDexaAgainstBUSD() public {
+    function testShouldPurchase() public {
         deal({token: address(deXa), to: address(user1), give: 50000000e18});
 
         deal(user1, 5 ether);
@@ -702,7 +839,131 @@ contract LaunchpadV2Test is Test {
         assertEq(raisingFundForPresale, 1000e18, "Not equal");
     }
 
-    function testShouldNotPurchaseForDexaAgainstBusdDueToSellLimitExceeding() public {
+    function testShouldNotPurchaseDueToMinContribution() public {
+        deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+        deal(user1, 5 ether);
+
+        vm.startPrank(user1);
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 500000e18,
+            maxTokensToSell: 1000000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            fundType: ILaunchpadV2.FundType.BUSD
+        });
+
+        ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
+        _roundsParams[0] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 86400),
+            endTime: (block.timestamp + 12 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 50000e18,
+            pricePerToken: 1e18
+        });
+        _roundsParams[1] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 12 weeks),
+            endTime: (block.timestamp + 24 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 25000e18,
+            pricePerToken: 1e18
+        });
+        _roundsParams[2] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 24 weeks),
+            endTime: (block.timestamp + 36 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 10000e18,
+            pricePerToken: 1e18
+        });
+        deXa.approve(address(instance), 1500000e18);
+        instance.createPresale{value: 0.001 ether}(_infoParams, _roundsParams);
+
+        assertEq(instance.createdPresale(_infoParams.token), true, "Not Created");
+
+        vm.warp(block.timestamp + 86400);
+        changePrank(user2);
+
+        IERC20(busd).approve(address(instance), 1000e18);
+
+        bytes4 selector = bytes4(keccak256("IncorrectMinContribution()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
+        instance.tokenPurchaseWithBUSD(_infoParams.token, 100e18);
+    }
+
+    function testShouldNotPurchaseDueToMaxContribution() public {
+        deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+        deal(user1, 5 ether);
+
+        vm.startPrank(user1);
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 500000e18,
+            maxTokensToSell: 1000000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            fundType: ILaunchpadV2.FundType.BUSD
+        });
+
+        ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
+        _roundsParams[0] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 86400),
+            endTime: (block.timestamp + 12 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 800e18,
+            tokensToSell: 50000e18,
+            pricePerToken: 1e18
+        });
+        _roundsParams[1] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 12 weeks),
+            endTime: (block.timestamp + 24 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 25000e18,
+            pricePerToken: 1e18
+        });
+        _roundsParams[2] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 24 weeks),
+            endTime: (block.timestamp + 36 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 10000e18,
+            pricePerToken: 1e18
+        });
+        deXa.approve(address(instance), 1500000e18);
+        instance.createPresale{value: 0.001 ether}(_infoParams, _roundsParams);
+
+        assertEq(instance.createdPresale(_infoParams.token), true, "Not Created");
+
+        vm.warp(block.timestamp + 86400);
+        changePrank(user2);
+
+        IERC20(busd).approve(address(instance), 1000e18);
+
+        bytes4 selector = bytes4(keccak256("IncorrectMaxContribution()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
+        instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
+    }
+
+    function testShouldNotPurchaseDueToSellLimitExceeding() public {
         deal({token: address(deXa), to: address(user1), give: 50000000e18});
 
         deal(user1, 5 ether);
@@ -768,7 +1029,7 @@ contract LaunchpadV2Test is Test {
         assertEq(raisingFundForPresale, 0, "Not equal");
     }
 
-    function testShouldNotPurchaseForDexaAgainstBusdDueToTokensAlreadySold() public {
+    function testShouldNotPurchaseDueToTokensAlreadySold() public {
         deal({token: address(deXa), to: address(user1), give: 511500e18});
         deal({token: address(busd), to: address(user2), give: 50000e18});
         deal({token: address(busd), to: address(user3), give: 50000e18});
@@ -842,7 +1103,7 @@ contract LaunchpadV2Test is Test {
         assertEq(raisingFundForPresale, 450e18, "Not equal");
     }
 
-    function testShouldNotPurchaseForDexaAgainstBusdDueToRoundNotStarted() public {
+    function testShouldNotPurchaseDueToRoundNotStarted() public {
         deal({token: address(deXa), to: address(user1), give: 50000000e18});
 
         deal(user1, 5 ether);
@@ -969,5 +1230,258 @@ contract LaunchpadV2Test is Test {
         (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 3 ether, "Not equal");
+    }
+
+    function testShouldNotPurchaseDueToAlreadySoldUsingBNB() public {
+        deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+        deal(user1, 5 ether);
+
+        vm.startPrank(user1);
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 1e18,
+            maxTokensToSell: 10000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            fundType: ILaunchpadV2.FundType.BNB
+        });
+
+        ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
+        _roundsParams[0] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 86400),
+            endTime: (block.timestamp + 12 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10e18,
+            tokensToSell: 30e18,
+            pricePerToken: 50000000000000000
+        });
+        _roundsParams[1] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 12 weeks),
+            endTime: (block.timestamp + 24 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10e18,
+            tokensToSell: 30e18,
+            pricePerToken: 75000000000000000
+        });
+        _roundsParams[2] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 24 weeks),
+            endTime: (block.timestamp + 36 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10e18,
+            tokensToSell: 30e18,
+            pricePerToken: 1e18
+        });
+        deXa.approve(address(instance), 1500000e18);
+        instance.createPresale{value: 0.001 ether}(_infoParams, _roundsParams);
+
+        assertEq(instance.createdPresale(_infoParams.token), true, "Not Created");
+
+        vm.warp(block.timestamp + 86400);
+        changePrank(user2);
+        deal(user2, 15 ether);
+
+        bytes4 selector = bytes4(keccak256("TokensAlreadySold()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
+
+        instance.tokenPurchaseWithBNB{value: 10 ether}(_infoParams.token);
+    }
+
+    function testShouldNotPurchaseDueToMinContributionUsingBNB() public {
+        deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+        deal(user1, 5 ether);
+        deal(user2, 5 ether);
+
+        vm.startPrank(user1);
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 500000e18,
+            maxTokensToSell: 1000000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            fundType: ILaunchpadV2.FundType.BNB
+        });
+
+        ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
+        _roundsParams[0] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 86400),
+            endTime: (block.timestamp + 12 weeks),
+            lockMonths: 3,
+            minContribution: 3e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 50000e18,
+            pricePerToken: 50000000000000000
+        });
+        _roundsParams[1] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 12 weeks),
+            endTime: (block.timestamp + 24 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 25000e18,
+            pricePerToken: 75000000000000000
+        });
+        _roundsParams[2] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 24 weeks),
+            endTime: (block.timestamp + 36 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 10000e18,
+            pricePerToken: 1e18
+        });
+        deXa.approve(address(instance), 1500000e18);
+        instance.createPresale{value: 0.001 ether}(_infoParams, _roundsParams);
+
+        assertEq(instance.createdPresale(_infoParams.token), true, "Not Created");
+
+        vm.warp(block.timestamp + 86400);
+        changePrank(user2);
+
+        IERC20(busd).approve(address(instance), 1000e18);
+
+        bytes4 selector = bytes4(keccak256("IncorrectMinContribution()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
+        instance.tokenPurchaseWithBNB{value: 1 ether}(_infoParams.token);
+    }
+
+    function testShouldNotPurchaseDueToMaxContributionUsingBNB() public {
+        deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+        deal(user1, 5 ether);
+        deal(user2, 5 ether);
+
+        vm.startPrank(user1);
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 500000e18,
+            maxTokensToSell: 1000000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            fundType: ILaunchpadV2.FundType.BNB
+        });
+
+        ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
+        _roundsParams[0] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 86400),
+            endTime: (block.timestamp + 12 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 3e18,
+            tokensToSell: 50000e18,
+            pricePerToken: 50000000000000000
+        });
+        _roundsParams[1] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 12 weeks),
+            endTime: (block.timestamp + 24 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 25000e18,
+            pricePerToken: 75000000000000000
+        });
+        _roundsParams[2] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 24 weeks),
+            endTime: (block.timestamp + 36 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 10000e18,
+            pricePerToken: 1e18
+        });
+        deXa.approve(address(instance), 1500000e18);
+        instance.createPresale{value: 0.001 ether}(_infoParams, _roundsParams);
+
+        assertEq(instance.createdPresale(_infoParams.token), true, "Not Created");
+
+        vm.warp(block.timestamp + 86400);
+        changePrank(user2);
+
+        IERC20(busd).approve(address(instance), 1000e18);
+
+        bytes4 selector = bytes4(keccak256("IncorrectMaxContribution()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
+        instance.tokenPurchaseWithBNB{value: 5 ether}(_infoParams.token);
+    }
+
+    function testShouldPurchaseDueToRoundNotStartedUsingBNB() public {
+        deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+        deal(user1, 5 ether);
+
+        vm.startPrank(user1);
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 500000e18,
+            maxTokensToSell: 1000000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            fundType: ILaunchpadV2.FundType.BNB
+        });
+
+        ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
+        _roundsParams[0] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 86400),
+            endTime: (block.timestamp + 12 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 50000e18,
+            pricePerToken: 50000000000000000
+        });
+        _roundsParams[1] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 12 weeks),
+            endTime: (block.timestamp + 24 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 25000e18,
+            pricePerToken: 75000000000000000
+        });
+        _roundsParams[2] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 24 weeks),
+            endTime: (block.timestamp + 36 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 10000e18,
+            pricePerToken: 1e18
+        });
+        deXa.approve(address(instance), 1500000e18);
+        instance.createPresale{value: 0.001 ether}(_infoParams, _roundsParams);
+
+        assertEq(instance.createdPresale(_infoParams.token), true, "Not Created");
+
+        changePrank(user2);
+        deal(user2, 5 ether);
+
+        bytes4 selector = bytes4(keccak256("IncorrectRoundsCount()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
+
+        instance.tokenPurchaseWithBNB{value: 3 ether}(_infoParams.token);
+
+        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+
+        assertEq(raisingFundForPresale, 0, "Not equal");
     }
 }
