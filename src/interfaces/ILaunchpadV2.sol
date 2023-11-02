@@ -12,6 +12,7 @@ interface ILaunchpadV2 {
         uint256 purchaseTime;
         uint256 claimedToken;
         uint256 totalClaimableToken;
+        uint256 lastClaimedTime;
     }
 
     enum FundType {
@@ -95,9 +96,13 @@ interface ILaunchpadV2 {
     error IncorrectMaxContribution();
     error PurchaseWithOnlyBNB();
     error SellLimitExceeding();
+    error CannotClaim();
+    error NoTokensToClaim();
+    error Locked();
 
     function createPresale(PresaleInfoParams calldata _infoParams, RoundInfo[] memory _roundsParams) external payable;
     function updatePresale(PresaleInfoParams memory _infoParams, RoundInfo[] memory _roundsParams) external;
     function tokenPurchaseWithBUSD(address _token, uint256 _busdAmount) external;
     function tokenPurchaseWithBNB(address _token) external payable;
+    function claimTokens(address _token, uint8 _round) external;
 }

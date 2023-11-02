@@ -67,7 +67,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
             revert IncorrectRoundsCount();
         }
         uint256 _totalTokenToSell;
-        for (uint8 i = 0; i < _roundsParams.length; i++) {
+        for (uint8 i; i < _roundsParams.length; i++) {
             _totalTokenToSell += _roundsParams[i].tokensToSell;
         }
         if (_infoParams.maxTokensToSell < _totalTokenToSell) {
@@ -85,7 +85,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
 
         // presaleInfo[_infoParams.token].roundsInfo = _roundsParams;
 
-        for (uint256 i = 0; i < _roundsParams.length; i++) {
+        for (uint256 i; i < _roundsParams.length; i++) {
             presaleInfo[_infoParams.token].roundsInfo.push(_roundsParams[i]);
         }
 
@@ -118,7 +118,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
             revert IncorrectRoundsCount();
         }
         uint256 _totalTokenToSell;
-        for (uint8 i = 0; i < _roundsParams.length; i++) {
+        for (uint8 i; i < _roundsParams.length; i++) {
             _totalTokenToSell += _roundsParams[i].tokensToSell;
         }
         if (_infoParams.maxTokensToSell < _totalTokenToSell) {
@@ -143,7 +143,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
 
         uint256 loopCount = _roundsParams.length;
 
-        for (uint8 i = 0; i < loopCount; i++) {
+        for (uint8 i; i < loopCount; i++) {
             // if (_roundsParams.length > info.roundsInfo.length) {
             //     info.roundsInfo.push(_roundsParams[info.roundsInfo.length]);
             //     loopCount--;
@@ -198,7 +198,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
             presaleInfo[_token].contributions[uint8(_round)][msg.sender].purchaseTime = block.timestamp;
         }
 
-        uint256 tokenAmount = _busdAmount * _MULTIPLER / info.pricePerToken;
+        uint256 tokenAmount = _busdAmount * 1e18 / info.pricePerToken;
 
         presaleInfo[_token].contributions[uint8(_round)][msg.sender].totalClaimableToken += tokenAmount;
 
@@ -206,7 +206,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
 
         uint256 busdForOwner = _busdAmount * (_PERCENT - presaleInfo[_token].params.tokenFeeRate) / _PERCENT;
 
-        for (uint8 i = 0; i < REFERRAL_DEEP; i++) {
+        for (uint8 i; i < REFERRAL_DEEP; i++) {
             if (referrers[i] == address(0)) {
                 break;
             }
@@ -261,7 +261,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
 
         uint256 bnbForOwner = _bnbAmount * (_PERCENT - presaleInfo[_token].params.coinFeeRate) / _PERCENT;
 
-        for (uint8 i = 0; i < REFERRAL_DEEP; i++) {
+        for (uint8 i; i < REFERRAL_DEEP; i++) {
             if (referrers[i] == address(0)) {
                 break;
             }
@@ -275,6 +275,63 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         presaleInfo[_token].fundForFee += (_bnbAmount - bnbForOwner);
 
         emit TokenPurchaseWithBNB(_token, msg.sender, uint8(_round), _bnbAmount, bnbForOwner);
+    }
+
+    function claimTokens(address _token, uint8 _round) external override nonReentrant onlyRegisterUser {
+        if (!(hasSoftCapReached(_token))) {
+            revert CannotClaim();
+        }
+        ContributionInfo storage cInfo = presaleInfo[_token].contributions[_round][msg.sender];
+        if (cInfo.contributedFund < 0) {
+            revert NoTokensToClaim();
+        }
+
+        uint256 passedTime;
+        unchecked {
+            passedTime = (block.timestamp - cInfo.purchaseTime) / _MONTH;
+        }
+
+        if (passedTime < presaleInfo[_token].roundsInfo[_round].lockMonths) {
+            revert Locked();
+        }
+        uint256 tokenAmount = getClaimableTokenAmount(_token, _round, msg.sender);
+        cInfo.claimedToken += tokenAmount;
+
+        cInfo.lastClaimedTime = block.timestamp;
+
+        IERC20(_token).transfer(msg.sender, tokenAmount);
+
+        emit TokenClaim(_token, msg.sender, _round, tokenAmount);
+    }
+
+    function hasSoftCapReached(address _token) public view returns (bool) {
+        RoundInfo[] storage roundInfos = presaleInfo[_token].roundsInfo;
+        uint256 totalSoldTokenAmount;
+        for (uint8 i; i < roundInfos.length; i++) {
+            totalSoldTokenAmount += presaleInfo[_token].fundRaised[i] * 1e18 / roundInfos[i].pricePerToken;
+        }
+        if (totalSoldTokenAmount >= presaleInfo[_token].params.minTokensToSell) return true;
+        return false;
+    }
+
+    function getClaimableTokenAmount(address _token, uint8 _round, address _user) public view returns (uint256) {
+        RoundInfo storage info = presaleInfo[_token].roundsInfo[_round];
+        ContributionInfo memory contribution = presaleInfo[_token].contributions[_round][_user];
+        uint256 passedTime = (block.timestamp - contribution.purchaseTime) / _MONTH;
+        if (passedTime > info.lockMonths) {
+            uint256 months = (block.timestamp - contribution.purchaseTime) / _MONTH - info.lockMonths;
+            if (months > presaleInfo[_token].params.releaseMonth) months = presaleInfo[_token].params.releaseMonth;
+            uint256 tokenAmount;
+
+            unchecked {
+                tokenAmount = months * contribution.totalClaimableToken / presaleInfo[_token].params.releaseMonth
+                    - contribution.claimedToken;
+            }
+
+            return tokenAmount;
+        } else {
+            return 0;
+        }
     }
 
     function getRoundInfo(address _token) external view returns (RoundInfo[] memory) {
