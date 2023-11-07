@@ -99,6 +99,14 @@ interface ILaunchpadV2 {
     error CannotClaim();
     error NoTokensToClaim();
     error Locked();
+    error NotCreator();
+    error PresaleNotOver();
+    error NoFundsToClaim();
+    error FailedToWithdrawTokens();
+    error PresaleNotFailed();
+    error FailedToWithdrawFunds();
+    error RoundNotOver();
+    error NoRewardsToClaim();
 
     function createPresale(PresaleInfoParams calldata _infoParams, RoundInfo[] memory _roundsParams) external payable;
     function updatePresale(PresaleInfoParams memory _infoParams, RoundInfo[] memory _roundsParams) external;
