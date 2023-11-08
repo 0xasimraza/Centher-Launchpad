@@ -108,6 +108,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -161,6 +162,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BNB
         });
 
@@ -214,6 +216,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -270,6 +273,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -326,6 +330,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -381,6 +386,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -436,6 +442,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -491,6 +498,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -546,6 +554,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -601,6 +610,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -657,6 +667,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -702,6 +713,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
         bytes4 selector = bytes4(keccak256("MaxValueGreaterThanMin()"));
@@ -725,6 +737,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -770,6 +783,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
         bytes4 selector = bytes4(keccak256("IncorrectAmountToSell()"));
@@ -778,7 +792,7 @@ contract LaunchpadV2Test is Test {
     }
 
     // TestCases:: For BUSD purchases
-    function testShouldPurchase() public {
+    function testShouldPurchaseUsingBUSD() public {
         deal({token: address(deXa), to: address(user1), give: 50000000e18});
 
         deal(user1, 5 ether);
@@ -794,6 +808,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -836,7 +851,7 @@ contract LaunchpadV2Test is Test {
         IERC20(busd).approve(address(instance), 1000e18);
         instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 1000e18, "Not equal");
     }
@@ -857,6 +872,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -919,6 +935,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -981,6 +998,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -1026,7 +1044,7 @@ contract LaunchpadV2Test is Test {
         vm.expectRevert(abi.encodeWithSelector(selector));
         instance.tokenPurchaseWithBUSD(_infoParams.token, 5000e18);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 0, "Not equal");
     }
@@ -1049,6 +1067,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -1100,7 +1119,7 @@ contract LaunchpadV2Test is Test {
         vm.expectRevert(abi.encodeWithSelector(selector));
         instance.tokenPurchaseWithBUSD(_infoParams.token, 100e18);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 450e18, "Not equal");
     }
@@ -1121,6 +1140,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -1165,7 +1185,7 @@ contract LaunchpadV2Test is Test {
         vm.expectRevert(abi.encodeWithSelector(selector));
         instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 0, "Not equal");
     }
@@ -1187,6 +1207,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BNB
         });
 
@@ -1229,7 +1250,7 @@ contract LaunchpadV2Test is Test {
 
         instance.tokenPurchaseWithBNB{value: 3 ether}(_infoParams.token);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 3 ether, "Not equal");
     }
@@ -1250,6 +1271,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BNB
         });
 
@@ -1313,6 +1335,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BNB
         });
 
@@ -1376,6 +1399,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BNB
         });
 
@@ -1438,6 +1462,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BNB
         });
 
@@ -1482,7 +1507,7 @@ contract LaunchpadV2Test is Test {
 
         instance.tokenPurchaseWithBNB{value: 3 ether}(_infoParams.token);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 0, "Not equal");
     }
@@ -1504,6 +1529,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BNB
         });
 
@@ -1546,7 +1572,7 @@ contract LaunchpadV2Test is Test {
 
         instance.tokenPurchaseWithBNB{value: 3 ether}(_infoParams.token);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 3 ether, "Not equal");
 
@@ -1579,6 +1605,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -1621,7 +1648,7 @@ contract LaunchpadV2Test is Test {
         IERC20(busd).approve(address(instance), 1000e18);
         instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 1000e18, "Not equal");
 
@@ -1654,6 +1681,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -1696,7 +1724,7 @@ contract LaunchpadV2Test is Test {
         IERC20(busd).approve(address(instance), 1000e18);
         instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 1000e18, "Not equal");
 
@@ -1722,6 +1750,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -1764,7 +1793,7 @@ contract LaunchpadV2Test is Test {
         IERC20(busd).approve(address(instance), 1000e18);
         instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 1000e18, "Not equal");
 
@@ -1792,6 +1821,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -1834,7 +1864,7 @@ contract LaunchpadV2Test is Test {
         IERC20(busd).approve(address(instance), 1000e18);
         instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 1000e18, "Not equal");
 
@@ -1872,6 +1902,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -1914,7 +1945,7 @@ contract LaunchpadV2Test is Test {
         IERC20(busd).approve(address(instance), 1000e18);
         instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 1000e18, "Not equal");
 
@@ -1953,6 +1984,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BNB
         });
 
@@ -1995,7 +2027,7 @@ contract LaunchpadV2Test is Test {
 
         instance.tokenPurchaseWithBNB{value: 10 ether}(_infoParams.token);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 10 ether, "Not equal");
 
@@ -2033,6 +2065,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BNB
         });
 
@@ -2075,7 +2108,7 @@ contract LaunchpadV2Test is Test {
 
         instance.tokenPurchaseWithBNB{value: 10 ether}(_infoParams.token);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 10 ether, "Not equal");
 
@@ -2100,7 +2133,7 @@ contract LaunchpadV2Test is Test {
 
     // TestCases:: Owner usable functions
 
-    function testShouldWithdrawFundForOwnerUsingBusd() public {
+    function testShouldWithdrawFundForOwnerUsingBUSD() public {
         deal({token: address(deXa), to: address(user1), give: 50000000e18});
 
         deal(user1, 5 ether);
@@ -2116,6 +2149,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -2158,7 +2192,7 @@ contract LaunchpadV2Test is Test {
         IERC20(busd).approve(address(instance), 1000e18);
         instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 1000e18, "Not equal");
 
@@ -2182,7 +2216,7 @@ contract LaunchpadV2Test is Test {
         busd.transfer(address(1), busd.balanceOf(user1));
 
         instance.withdrawFundsForCreator(address(deXa));
-        assertEq(busd.balanceOf(user1), 890e18, "Not equal");
+        assertEq(busd.balanceOf(user1), 990e18, "Not equal");
 
         changePrank(owner);
 
@@ -2190,10 +2224,10 @@ contract LaunchpadV2Test is Test {
         busd.transfer(address(1), busd.balanceOf(owner));
 
         instance.withdrawFundsForFee(address(deXa));
-        assertEq(busd.balanceOf(owner), 110e18, "Not equal");
+        assertEq(busd.balanceOf(owner), 10e18, "Not equal");
     }
 
-    function testShouldNotWithdrawFundForOwnerDuePresaleLiveUsingBusd() public {
+    function testShouldNotWithdrawFundForOwnerDuePresaleLiveUsingBUSD() public {
         deal({token: address(deXa), to: address(user1), give: 50000000e18});
 
         deal(user1, 5 ether);
@@ -2209,6 +2243,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BUSD
         });
 
@@ -2251,7 +2286,7 @@ contract LaunchpadV2Test is Test {
         IERC20(busd).approve(address(instance), 1000e18);
         instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 1000e18, "Not equal");
 
@@ -2302,6 +2337,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BNB
         });
 
@@ -2344,7 +2380,7 @@ contract LaunchpadV2Test is Test {
 
         instance.tokenPurchaseWithBNB{value: 3 ether}(_infoParams.token);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 3 ether, "Not equal");
 
@@ -2368,7 +2404,7 @@ contract LaunchpadV2Test is Test {
         busd.transfer(address(1), busd.balanceOf(user1));
 
         instance.withdrawFundsForCreator(address(deXa));
-        assertEq(user1.balance, 2670000000000000000, "Not equal");
+        assertEq(user1.balance, 2970000000000000000, "Not equal");
 
         changePrank(owner);
 
@@ -2376,7 +2412,7 @@ contract LaunchpadV2Test is Test {
         busd.transfer(address(1), busd.balanceOf(owner));
 
         instance.withdrawFundsForFee(address(deXa));
-        assertEq(owner.balance, 330000000000000000, "Not equal");
+        assertEq(owner.balance, 30000000000000000, "Not equal");
     }
 
     function testShouldNotWithdrawFundForOwnerDuePresaleLiveUsingBNB() public {
@@ -2395,6 +2431,7 @@ contract LaunchpadV2Test is Test {
             coinFeeRate: 100,
             tokenFeeRate: 100,
             releaseMonth: 10,
+            isRefSupport: false,
             fundType: ILaunchpadV2.FundType.BNB
         });
 
@@ -2436,7 +2473,7 @@ contract LaunchpadV2Test is Test {
         deal(user2, 3 ether);
         instance.tokenPurchaseWithBNB{value: 3 ether}(_infoParams.token);
 
-        (, uint256 raisingFundForPresale,,,) = instance.presaleInfo(address(deXa));
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
 
         assertEq(raisingFundForPresale, 3 ether, "Not equal");
 
@@ -2469,5 +2506,192 @@ contract LaunchpadV2Test is Test {
         vm.expectRevert(abi.encodeWithSelector(selector1));
         instance.withdrawFundsForFee(address(deXa));
         assertEq(busd.balanceOf(owner), 0, "Not equal");
+    }
+
+    // TestCases:: For Create Presale
+    function testShouldNotClaimRefRewardsUsingBUSD() public {
+        deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+        deal(user1, 5 ether);
+
+        vm.startPrank(user1);
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 1000e18,
+            maxTokensToSell: 1000000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            isRefSupport: true,
+            fundType: ILaunchpadV2.FundType.BUSD
+        });
+
+        ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
+        _roundsParams[0] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 86400),
+            endTime: (block.timestamp + 12 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 50000e18,
+            pricePerToken: 1e18
+        });
+        _roundsParams[1] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 12 weeks),
+            endTime: (block.timestamp + 24 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 25000e18,
+            pricePerToken: 1e18
+        });
+        _roundsParams[2] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 24 weeks),
+            endTime: (block.timestamp + 36 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 10000e18,
+            pricePerToken: 1e18
+        });
+        deXa.approve(address(instance), 1500000e18);
+        instance.createPresale{value: 0.001 ether}(_infoParams, _roundsParams);
+
+        assertEq(instance.createdPresale(_infoParams.token), true, "Not Created");
+
+        vm.warp(block.timestamp + 86400);
+        changePrank(user2);
+
+        IERC20(busd).approve(address(instance), 1000e18);
+        bytes4 selector1 = bytes4(keccak256("AffiliateStatusIsPending()"));
+        vm.expectRevert(abi.encodeWithSelector(selector1));
+        instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
+
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
+
+        assertEq(raisingFundForPresale, 0, "Not equal");
+    }
+
+    function testShouldClaimRefRewardsUsingBUSD() public {
+        vm.startPrank(owner);
+        address[] memory _users = new address[](1);
+        _users[0] = address(owner);
+
+        address[] memory _refs = new address[](1);
+        _refs[0] = address(0);
+
+        register.registerForOwnerBatch(_users, _refs);
+        deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+        deal(user1, 5 ether);
+
+        changePrank(user1);
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 1000e18,
+            maxTokensToSell: 1000000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            isRefSupport: true,
+            fundType: ILaunchpadV2.FundType.BUSD
+        });
+
+        ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
+        _roundsParams[0] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 86400),
+            endTime: (block.timestamp + 12 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 50000e18,
+            pricePerToken: 1e18
+        });
+        _roundsParams[1] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 12 weeks),
+            endTime: (block.timestamp + 24 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 25000e18,
+            pricePerToken: 1e18
+        });
+        _roundsParams[2] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 24 weeks),
+            endTime: (block.timestamp + 36 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 10000e18,
+            pricePerToken: 1e18
+        });
+        deXa.approve(address(instance), 1500000e18);
+        instance.createPresale{value: 0.001 ether}(_infoParams, _roundsParams);
+
+        ILaunchpadV2.AffiliateSettingInput memory _setting = ILaunchpadV2.AffiliateSettingInput({
+            levelOne: 600,
+            levelTwo: 400,
+            levelThree: 200,
+            levelFour: 200,
+            levelFive: 200,
+            levelSix: 200
+        });
+
+        instance.setAffiliateSetting(address(deXa), _setting);
+
+        assertEq(instance.createdPresale(_infoParams.token), true, "Not Created");
+
+        vm.warp(block.timestamp + 86400);
+        changePrank(user2);
+
+        IERC20(busd).approve(address(instance), 1000e18);
+        instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
+
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
+
+        assertEq(raisingFundForPresale, 1000e18, "Not equal");
+
+        vm.warp(block.timestamp + (4 * _MONTH));
+
+        instance.claimTokens(address(deXa), 0);
+
+        assertEq(deXa.balanceOf(user2), 100e18, "Not equal");
+
+        vm.warp(block.timestamp + (9 * _MONTH));
+
+        instance.claimTokens(address(deXa), 0);
+
+        // assertEq(deXa.balanceOf(user2), 1000e18, "Not equal");
+
+        vm.warp(block.timestamp + 52 weeks * 2);
+
+        changePrank(user1);
+
+        //flush old funds
+        busd.transfer(address(1), busd.balanceOf(user1));
+
+        instance.withdrawFundsForCreator(address(deXa));
+        // assertEq(busd.balanceOf(user1), 990e18, "Not equal");
+
+        changePrank(owner);
+
+        //flush old funds
+        busd.transfer(address(1), busd.balanceOf(owner));
+
+        instance.withdrawTokensForFee(address(deXa));
+        // assertEq(busd.balanceOf(owner), 10e18, "Not equal");
+        changePrank(user1);
+
+        instance.claimRefReward(address(deXa));
+        changePrank(owner);
+
+        instance.claimRefReward(address(deXa));
+
     }
 }
