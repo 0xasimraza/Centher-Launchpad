@@ -16,12 +16,13 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
     uint256 public constant REFERRAL_DEEP = 6;
 
     uint256 private constant _MONTH = 86400 * 30;
-    // uint256 private constant _MULTIPLER = 10000;
+
     uint256 private constant _PERCENT = 10000;
 
-    uint256[REFERRAL_DEEP] public referralRates;
+    // uint256[REFERRAL_DEEP] public referralRates;
 
     mapping(address => PresaleInfo) public presaleInfo;
+    mapping(address => AffiliateSetting[]) public affiliateSettings;
     mapping(address => bool) public createdPresale;
 
     IERC20 public busd;
@@ -34,9 +35,16 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         _;
     }
 
+    modifier onlyCreator(address _token) {
+        if (presaleInfo[_token].params.owner != msg.sender) {
+            revert NotCreator();
+        }
+        _;
+    }
+
     constructor(address _register, address _busd) Ownable() ReentrancyGuard() {
         createFee = 0.001 ether;
-        referralRates = [600, 400, 200, 200, 200, 200];
+        // referralRates = [600, 400, 200, 200, 200, 200];
 
         busd = IERC20(_busd);
         register = IRegistration(_register);
@@ -84,6 +92,10 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         // PresaleInfo storage info = presaleInfo[_infoParams.token];
         presaleInfo[_infoParams.token].params = _infoParams;
         presaleInfo[_infoParams.token].tokenForFee = tokenForFee;
+
+        if (_infoParams.isRefSupport == true) {
+            presaleInfo[_infoParams.token].affiliateSetup = AffiliateStatus.Pending;
+        }
 
         // presaleInfo[_infoParams.token].roundsInfo = _roundsParams;
 
@@ -142,6 +154,10 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         info.params = _infoParams;
         info.tokenForFee = newTokenForFee;
 
+        if (_infoParams.isRefSupport == true) {
+            presaleInfo[_infoParams.token].affiliateSetup = AffiliateStatus.Pending;
+        }
+
         delete info.roundsInfo;
 
         for (uint8 i; i < roundLength; i++) {
@@ -178,12 +194,17 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         if (presaleInfo[_token].params.fundType != FundType.BUSD) {
             revert PurchaseWithOnlyBUSD();
         }
-        if (!(_busdAmount >= info.minContribution)) {
+        if (_busdAmount < info.minContribution) {
             revert IncorrectMinContribution();
         }
-        if (!(_busdAmount <= info.maxContribution)) {
+        if (_busdAmount > info.maxContribution) {
             revert IncorrectMaxContribution();
         }
+
+        if (presaleInfo[_token].affiliateSetup == AffiliateStatus.Pending) {
+            revert AffiliateStatusIsPending();
+        }
+
         busd.transferFrom(msg.sender, address(this), _busdAmount);
 
         presaleInfo[_token].raisingFundForPresale += _busdAmount;
@@ -205,22 +226,10 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
 
         presaleInfo[_token].contributions[uint8(_round)][msg.sender].totalClaimableToken += tokenAmount;
 
-        address[] memory referrers = register.getReferrerAddresses(msg.sender);
-
         uint256 busdForOwner = _busdAmount * (_PERCENT - presaleInfo[_token].params.tokenFeeRate) / _PERCENT;
 
-        for (uint8 i; i < REFERRAL_DEEP; i++) {
-            if (referrers[i] == address(0)) {
-                break;
-            }
-            uint256 bonus;
-            unchecked {
-                bonus = _busdAmount * referralRates[i] / _PERCENT;
-            }
-
-            presaleInfo[_token].fundForReferrer[referrers[i]] += bonus;
-            busdForOwner -= bonus;
-            emit SetRefReward(_token, referrers[i], msg.sender, uint8(i + 1), uint8(_round), FundType.BUSD, bonus);
+        if (presaleInfo[_token].affiliateSetup == AffiliateStatus.Active) {
+            busdForOwner = updateRefRewards(_token, _round, _busdAmount, busdForOwner);
         }
 
         presaleInfo[_token].fundForCreator += busdForOwner;
@@ -252,6 +261,10 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         presaleInfo[_token].contributions[uint8(_round)][msg.sender].contributedFund += _bnbAmount;
         presaleInfo[_token].fundRaised[uint8(_round)] += _bnbAmount;
 
+        if (presaleInfo[_token].affiliateSetup == AffiliateStatus.Pending) {
+            revert AffiliateStatusIsPending();
+        }
+
         if (hasSoldOut(_token, uint8(_round))) {
             revert TokensAlreadySold();
         }
@@ -264,18 +277,9 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
 
         presaleInfo[_token].contributions[uint8(_round)][msg.sender].totalClaimableToken += tokenAmount;
 
-        address[] memory referrers = register.getReferrerAddresses(msg.sender);
-
         uint256 bnbForOwner = _bnbAmount * (_PERCENT - presaleInfo[_token].params.coinFeeRate) / _PERCENT;
-
-        for (uint8 i; i < REFERRAL_DEEP; i++) {
-            if (referrers[i] == address(0)) {
-                break;
-            }
-            uint256 bonus = _bnbAmount * referralRates[i] / _PERCENT;
-            presaleInfo[_token].fundForReferrer[referrers[i]] += bonus;
-            bnbForOwner -= bonus;
-            emit SetRefReward(_token, referrers[i], msg.sender, uint8(i + 1), uint8(_round), FundType.BNB, bonus);
+        if (presaleInfo[_token].affiliateSetup == AffiliateStatus.Active) {
+            bnbForOwner = updateRefRewards(_token, _round, _bnbAmount, bnbForOwner);
         }
 
         presaleInfo[_token].fundForCreator += bnbForOwner;
@@ -341,10 +345,10 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         }
     }
 
-    function withdrawFundsForCreator(address _token) external {
-        if (msg.sender != presaleInfo[_token].params.owner) {
-            revert NotCreator();
-        }
+    function withdrawFundsForCreator(address _token) external onlyCreator(_token) {
+        // if (msg.sender != presaleInfo[_token].params.owner) {
+        //     revert NotCreator();
+        // }
         if (!hasSoftCapReached(_token)) {
             revert CannotClaim();
         }
@@ -369,10 +373,10 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         emit WithdrawFundsForCreator(_token, msg.sender, presaleInfo[_token].params.fundType, amount);
     }
 
-    function withdrawTokensForCreator(address _token) external {
-        if (msg.sender != presaleInfo[_token].params.owner) {
-            revert NotCreator();
-        }
+    function withdrawTokensForCreator(address _token) external onlyCreator(_token) {
+        // if (msg.sender != presaleInfo[_token].params.owner) {
+        //     revert NotCreator();
+        // }
         if (!_hasEnded(_token)) {
             revert PresaleNotOver();
         }
@@ -454,13 +458,79 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         emit Refund(_token, msg.sender, presaleInfo[_token].params.fundType, amount);
     }
 
+    function setAffiliateSetting(address token, AffiliateSettingInput memory _setting)
+        external
+        override
+        onlyCreator(token)
+    {
+        if (presaleInfo[token].affiliateSetup == AffiliateStatus.NoRefReward) {
+            revert NotSupportedForRefReward();
+        }
+
+        if (presaleInfo[token].affiliateSetup == AffiliateStatus.Active) {
+            revert AlreadyAffiliateSettingUpdated();
+        }
+
+        affiliateSettings[token].push(AffiliateSetting({level: 1, percent: _setting.levelOne}));
+
+        affiliateSettings[token].push(AffiliateSetting({level: 2, percent: _setting.levelTwo}));
+
+        affiliateSettings[token].push(AffiliateSetting({level: 3, percent: _setting.levelThree}));
+
+        affiliateSettings[token].push(AffiliateSetting({level: 4, percent: _setting.levelFour}));
+
+        affiliateSettings[token].push(AffiliateSetting({level: 5, percent: _setting.levelFive}));
+
+        affiliateSettings[token].push(AffiliateSetting({level: 6, percent: _setting.levelSix}));
+
+        presaleInfo[token].affiliateSetup = AffiliateStatus.Active;
+
+        emit AffiliateSettingSet(token, affiliateSettings[token], presaleInfo[token].affiliateSetup);
+    }
+
     function changeCreateFee(uint256 _newValue) external onlyOwner {
         createFee = _newValue;
     }
 
-    function changeRefferalRates(uint256[REFERRAL_DEEP] calldata _newRates) external onlyOwner {
-        referralRates = _newRates;
+    // function changeRefferalRates(uint256[REFERRAL_DEEP] calldata _newRates) external onlyOwner {
+    //     referralRates = _newRates;
+    // }
+
+    function claimRefReward(address _token) external nonReentrant onlyRegisterUser {
+        if (presaleInfo[_token].affiliateSetup != AffiliateStatus.Active) {
+            revert NotSupportedForRefReward();
+        }
+        if (presaleInfo[_token].fundForReferrer[msg.sender] < 0) {
+            revert NoRewardsToClaim();
+        }
+        if (!hasSoftCapReached(_token)) {
+            revert CannotClaim();
+        }
+        if (!_hasEnded(_token)) {
+            revert PresaleNotOver();
+        }
+
+        uint256 _amount = presaleInfo[_token].fundForReferrer[msg.sender];
+        presaleInfo[_token].fundForReferrer[msg.sender] = 0;
+
+        if (presaleInfo[_token].params.fundType == FundType.BUSD) {
+            busd.transfer(msg.sender, _amount);
+        } else if (presaleInfo[_token].params.fundType == FundType.BNB) {
+            (bool success,) = payable(msg.sender).call{value: _amount}("");
+            if (!success) {
+                revert FailedToWithdrawFunds();
+            }
+        }
+        emit RefRewardClaim(_token, msg.sender, presaleInfo[_token].params.fundType, _amount);
     }
+
+    // function withdrawFees(address _token) external onlyOwner {
+    //     if (presaleInfo[_token].params.fundType == FundType.BUSD) {
+    //         withdrawTokensForFee(_token);
+    //     } else {
+    //         withdrawFundsForFee(_token);
+    //     }
+    // }
 
     function withdrawFundsForFee(address _token) external onlyOwner {
         if (!hasSoftCapReached(_token)) {
@@ -506,9 +576,36 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         emit WithdrawTokensForFee(_token, amount);
     }
 
-    function getRefferalRates() external view returns (uint256[REFERRAL_DEEP] memory) {
-        return referralRates;
+    function updateRefRewards(address _token, int8 _round, uint256 _amount, uint256 bnbForOwner)
+        internal
+        returns (uint256)
+    {
+        if (presaleInfo[_token].affiliateSetup == AffiliateStatus.Active) {
+            uint256 reward;
+            address[] memory referrers = register.getReferrerAddresses(msg.sender);
+
+            AffiliateSetting[] memory levelsInfo = affiliateSettings[_token];
+
+            for (uint256 i; i < REFERRAL_DEEP; i++) {
+                if (referrers[i] != address(0) && levelsInfo[i].percent != 0) {
+                    unchecked {
+                        reward = (_amount * levelsInfo[i].percent) / 10000;
+                        presaleInfo[_token].fundForReferrer[referrers[i]] += reward;
+                        bnbForOwner -= reward;
+                    }
+                    emit SetRefReward(
+                        _token, referrers[i], msg.sender, uint8(i + 1), uint8(_round), FundType.BUSD, reward
+                    );
+                }
+            }
+        }
+
+        return bnbForOwner;
     }
+
+    // function getRefferalRates(address _token) external view returns (uint256[REFERRAL_DEEP] memory) {
+    //     return affiliateSettings[_token];
+    // }
 
     function _hasEnded(address _token) internal view returns (bool) {
         if (getRound(_token) == -4) {

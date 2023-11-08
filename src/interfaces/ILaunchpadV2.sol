@@ -20,6 +20,12 @@ interface ILaunchpadV2 {
         BUSD
     }
 
+    enum AffiliateStatus {
+        NoRefReward,
+        Pending,
+        Active
+    }
+
     struct RoundInfo {
         uint256 startTime;
         uint256 endTime;
@@ -39,6 +45,7 @@ interface ILaunchpadV2 {
         uint256 coinFeeRate;
         uint256 tokenFeeRate;
         uint256 releaseMonth;
+        bool isRefSupport;
         FundType fundType;
     }
 
@@ -48,12 +55,28 @@ interface ILaunchpadV2 {
         uint256 fundForFee;
         uint256 tokenForFee;
         uint256 fundForCreator;
+        AffiliateStatus affiliateSetup;
         RoundInfo[] roundsInfo;
         mapping(address => uint256) fundForReferrer;
         mapping(uint8 => uint256) fundRaised;
         mapping(uint8 => mapping(address => ContributionInfo)) contributions;
     }
 
+    struct AffiliateSettingInput {
+        uint256 levelOne;
+        uint256 levelTwo;
+        uint256 levelThree;
+        uint256 levelFour;
+        uint256 levelFive;
+        uint256 levelSix;
+    }
+
+    struct AffiliateSetting {
+        uint256 level;
+        uint256 percent;
+    }
+
+    event AffiliateSettingSet(address, AffiliateSetting[] affiliateSetting, AffiliateStatus isActive);
     event CreatePresale(address indexed token, address creator, PresaleInfoParams infoParams, RoundInfo[] roundsParams);
     event UpdatePresale(address indexed token, PresaleInfoParams infoParams, RoundInfo[] roundsParams);
     event TokenPurchaseWithBNB(
@@ -107,10 +130,14 @@ interface ILaunchpadV2 {
     error FailedToWithdrawFunds();
     error RoundNotOver();
     error NoRewardsToClaim();
+    error NotSupportedForRefReward();
+    error AffiliateStatusIsPending();
+    error AlreadyAffiliateSettingUpdated();
 
     function createPresale(PresaleInfoParams calldata _infoParams, RoundInfo[] memory _roundsParams) external payable;
     function updatePresale(PresaleInfoParams memory _infoParams, RoundInfo[] memory _roundsParams) external;
     function tokenPurchaseWithBUSD(address _token, uint256 _busdAmount) external;
     function tokenPurchaseWithBNB(address _token) external payable;
     function claimTokens(address _token, uint8 _round) external;
+    function setAffiliateSetting(address token, AffiliateSettingInput memory _setting) external;
 }
