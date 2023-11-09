@@ -414,7 +414,6 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         if (!_hasEnded(_token)) {
             revert PresaleNotOver();
         }
-
         uint256 _amount = presaleInfo[_token].fundForReferrer[msg.sender];
         presaleInfo[_token].fundForReferrer[msg.sender] = 0;
 
