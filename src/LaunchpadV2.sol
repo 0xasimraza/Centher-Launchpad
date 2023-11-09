@@ -1,25 +1,21 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+// SPDX-License-Identifier: LICENSED
+pragma solidity 0.8.19;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "./interfaces/ILaunchpadV2.sol";
+import {ILaunchpadV2, IRegistration} from "./interfaces/ILaunchpadV2.sol";
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-import "forge-std/console2.sol";
+// import "forge-std/console2.sol";
 
 contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
     uint256 public createFee;
 
     uint256 public constant REFERRAL_DEEP = 6;
-
     uint256 private constant _MONTH = 86400 * 30;
-
     uint256 private constant _PERCENT = 10000;
-
-    // uint256[REFERRAL_DEEP] public referralRates;
 
     mapping(address => PresaleInfo) public presaleInfo;
     mapping(address => AffiliateSetting[]) public affiliateSettings;
@@ -44,7 +40,6 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
 
     constructor(address _register, address _busd) Ownable() ReentrancyGuard() {
         createFee = 0.001 ether;
-        // referralRates = [600, 400, 200, 200, 200, 200];
 
         busd = IERC20(_busd);
         register = IRegistration(_register);
@@ -83,21 +78,24 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         if (_infoParams.maxTokensToSell < _totalTokenToSell) {
             revert IncorrectAmountToSell();
         }
-        uint256 tokenForFee = IERC20(_infoParams.token).totalSupply() * _infoParams.tokenFeeRate / _PERCENT;
+        uint256 tokenForFee;
 
-        uint256 tokenAmount = _infoParams.maxTokensToSell + tokenForFee;
+        uint256 tokenAmount;
+
+        unchecked {
+            tokenForFee = IERC20(_infoParams.token).totalSupply() * _infoParams.tokenFeeRate / _PERCENT;
+
+            tokenAmount = _infoParams.maxTokensToSell + tokenForFee;
+        }
 
         IERC20(_infoParams.token).transferFrom(msg.sender, address(this), tokenAmount);
 
-        // PresaleInfo storage info = presaleInfo[_infoParams.token];
         presaleInfo[_infoParams.token].params = _infoParams;
         presaleInfo[_infoParams.token].tokenForFee = tokenForFee;
 
         if (_infoParams.isRefSupport == true) {
             presaleInfo[_infoParams.token].affiliateSetup = AffiliateStatus.Pending;
         }
-
-        // presaleInfo[_infoParams.token].roundsInfo = _roundsParams;
 
         for (uint256 i; i < roundLength; i++) {
             presaleInfo[_infoParams.token].roundsInfo.push(_roundsParams[i]);
@@ -140,8 +138,12 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
             revert IncorrectAmountToSell();
         }
 
-        uint256 newTokenForFee = IERC20(_infoParams.token).totalSupply() * _infoParams.tokenFeeRate / _PERCENT;
-        uint256 newTokenAmount = _infoParams.maxTokensToSell + newTokenForFee;
+        uint256 newTokenForFee;
+        uint256 newTokenAmount;
+        unchecked {
+            newTokenForFee = IERC20(_infoParams.token).totalSupply() * _infoParams.tokenFeeRate / _PERCENT;
+            newTokenAmount = _infoParams.maxTokensToSell + newTokenForFee;
+        }
 
         PresaleInfo storage info = presaleInfo[_infoParams.token];
         uint256 oldTokenAmount = info.params.maxTokensToSell + info.tokenForFee;
@@ -161,20 +163,62 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         delete info.roundsInfo;
 
         for (uint8 i; i < roundLength; i++) {
-            // if (_roundsParams.length > info.roundsInfo.length) {
-            //     info.roundsInfo.push(_roundsParams[info.roundsInfo.length]);
-            //     loopCount--;
-            // } else if (_roundsParams.length < info.roundsInfo.length) {
-            //     uint256 def = info.roundsInfo.length - _roundsParams.length;
-            //     for (uint8 j = 0; j < def; j++) {
-            //         info.roundsInfo.pop();
-            //     }
-            // }
-
             info.roundsInfo[i] = _roundsParams[i];
         }
 
         emit UpdatePresale(_infoParams.token, _infoParams, _roundsParams);
+    }
+
+    function tokenPurchaseWithBNB(address _token) external payable override nonReentrant onlyRegisterUser {
+        int8 _round = getRound(_token);
+        if (!(_round == 0 || _round == 1 || _round == 2)) {
+            revert IncorrectRoundsCount();
+        }
+
+        RoundInfo storage info = presaleInfo[_token].roundsInfo[uint8(_round)];
+
+        if (presaleInfo[_token].params.fundType != FundType.BNB) {
+            revert PurchaseWithOnlyBNB();
+        }
+        uint256 _bnbAmount = msg.value;
+        if (_bnbAmount < info.minContribution) {
+            revert IncorrectMinContribution();
+        }
+        if (_bnbAmount > info.maxContribution) {
+            revert IncorrectMaxContribution();
+        }
+        presaleInfo[_token].raisingFundForPresale += _bnbAmount;
+
+        presaleInfo[_token].contributions[uint8(_round)][msg.sender].contributedFund += _bnbAmount;
+        presaleInfo[_token].fundRaised[uint8(_round)] += _bnbAmount;
+
+        if (presaleInfo[_token].affiliateSetup == AffiliateStatus.Pending) {
+            revert AffiliateStatusIsPending();
+        }
+
+        if (hasSoldOut(_token, uint8(_round))) {
+            revert TokensAlreadySold();
+        }
+
+        if (presaleInfo[_token].contributions[uint8(_round)][msg.sender].purchaseTime == 0) {
+            presaleInfo[_token].contributions[uint8(_round)][msg.sender].purchaseTime = block.timestamp;
+        }
+
+        uint256 tokenAmount = _bnbAmount * 1e18 / info.pricePerToken;
+
+        presaleInfo[_token].contributions[uint8(_round)][msg.sender].totalClaimableToken += tokenAmount;
+
+        uint256 totalRefRewards;
+        if (presaleInfo[_token].affiliateSetup == AffiliateStatus.Active) {
+            totalRefRewards = updateRefRewards(_token, _round, _bnbAmount);
+        }
+
+        uint256 fundForFees = _bnbAmount - (_bnbAmount * (_PERCENT - presaleInfo[_token].params.coinFeeRate) / _PERCENT);
+
+        presaleInfo[_token].fundForCreator += _bnbAmount - (fundForFees + totalRefRewards);
+        presaleInfo[_token].fundForFee += fundForFees;
+
+        emit TokenPurchaseWithBNB(_token, msg.sender, uint8(_round), _bnbAmount, presaleInfo[_token].fundForCreator);
     }
 
     function tokenPurchaseWithBUSD(address _token, uint256 _busdAmount)
@@ -226,66 +270,17 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
 
         presaleInfo[_token].contributions[uint8(_round)][msg.sender].totalClaimableToken += tokenAmount;
 
-        uint256 busdForOwner = _busdAmount * (_PERCENT - presaleInfo[_token].params.tokenFeeRate) / _PERCENT;
-
+        uint256 totalRefRewards;
         if (presaleInfo[_token].affiliateSetup == AffiliateStatus.Active) {
-            busdForOwner = updateRefRewards(_token, _round, _busdAmount, busdForOwner);
+            totalRefRewards = updateRefRewards(_token, _round, _busdAmount);
         }
+        uint256 fundForFees =
+            _busdAmount - (_busdAmount * (_PERCENT - presaleInfo[_token].params.tokenFeeRate) / _PERCENT);
 
-        presaleInfo[_token].fundForCreator += busdForOwner;
-        presaleInfo[_token].fundForFee += (_busdAmount - busdForOwner);
+        presaleInfo[_token].fundForCreator += _busdAmount - (fundForFees + totalRefRewards);
+        presaleInfo[_token].fundForFee += fundForFees;
 
-        emit TokenPurchaseWithBUSD(_token, msg.sender, uint8(_round), _busdAmount, busdForOwner);
-    }
-
-    function tokenPurchaseWithBNB(address _token) external payable override nonReentrant onlyRegisterUser {
-        int8 _round = getRound(_token);
-        if (!(_round == 0 || _round == 1 || _round == 2)) {
-            revert IncorrectRoundsCount();
-        }
-
-        RoundInfo storage info = presaleInfo[_token].roundsInfo[uint8(_round)];
-
-        if (presaleInfo[_token].params.fundType != FundType.BNB) {
-            revert PurchaseWithOnlyBNB();
-        }
-        uint256 _bnbAmount = msg.value;
-        if (_bnbAmount < info.minContribution) {
-            revert IncorrectMinContribution();
-        }
-        if (_bnbAmount > info.maxContribution) {
-            revert IncorrectMaxContribution();
-        }
-        presaleInfo[_token].raisingFundForPresale += _bnbAmount;
-
-        presaleInfo[_token].contributions[uint8(_round)][msg.sender].contributedFund += _bnbAmount;
-        presaleInfo[_token].fundRaised[uint8(_round)] += _bnbAmount;
-
-        if (presaleInfo[_token].affiliateSetup == AffiliateStatus.Pending) {
-            revert AffiliateStatusIsPending();
-        }
-
-        if (hasSoldOut(_token, uint8(_round))) {
-            revert TokensAlreadySold();
-        }
-
-        if (presaleInfo[_token].contributions[uint8(_round)][msg.sender].purchaseTime == 0) {
-            presaleInfo[_token].contributions[uint8(_round)][msg.sender].purchaseTime = block.timestamp;
-        }
-
-        uint256 tokenAmount = _bnbAmount * 1e18 / info.pricePerToken;
-
-        presaleInfo[_token].contributions[uint8(_round)][msg.sender].totalClaimableToken += tokenAmount;
-
-        uint256 bnbForOwner = _bnbAmount * (_PERCENT - presaleInfo[_token].params.coinFeeRate) / _PERCENT;
-        if (presaleInfo[_token].affiliateSetup == AffiliateStatus.Active) {
-            bnbForOwner = updateRefRewards(_token, _round, _bnbAmount, bnbForOwner);
-        }
-
-        presaleInfo[_token].fundForCreator += bnbForOwner;
-        presaleInfo[_token].fundForFee += (_bnbAmount - bnbForOwner);
-
-        emit TokenPurchaseWithBNB(_token, msg.sender, uint8(_round), _bnbAmount, bnbForOwner);
+        emit TokenPurchaseWithBUSD(_token, msg.sender, uint8(_round), _busdAmount, presaleInfo[_token].fundForCreator);
     }
 
     function claimTokens(address _token, uint8 _round) external override nonReentrant onlyRegisterUser {
@@ -313,149 +308,6 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         IERC20(_token).transfer(msg.sender, tokenAmount);
 
         emit TokenClaim(_token, msg.sender, _round, tokenAmount);
-    }
-
-    function hasSoftCapReached(address _token) public view returns (bool) {
-        RoundInfo[] storage roundInfos = presaleInfo[_token].roundsInfo;
-        uint256 totalSoldTokenAmount;
-        for (uint8 i; i < roundInfos.length; i++) {
-            totalSoldTokenAmount += presaleInfo[_token].fundRaised[i] * 1e18 / roundInfos[i].pricePerToken;
-        }
-        if (totalSoldTokenAmount >= presaleInfo[_token].params.minTokensToSell) return true;
-        return false;
-    }
-
-    function getClaimableTokenAmount(address _token, uint8 _round, address _user) public view returns (uint256) {
-        RoundInfo storage info = presaleInfo[_token].roundsInfo[_round];
-        ContributionInfo memory contribution = presaleInfo[_token].contributions[_round][_user];
-        uint256 passedTime = (block.timestamp - contribution.purchaseTime) / _MONTH;
-        if (passedTime > info.lockMonths) {
-            uint256 months = (block.timestamp - contribution.purchaseTime) / _MONTH - info.lockMonths;
-            if (months > presaleInfo[_token].params.releaseMonth) months = presaleInfo[_token].params.releaseMonth;
-            uint256 tokenAmount;
-
-            unchecked {
-                tokenAmount = months * contribution.totalClaimableToken / presaleInfo[_token].params.releaseMonth
-                    - contribution.claimedToken;
-            }
-
-            return tokenAmount;
-        } else {
-            return 0;
-        }
-    }
-
-    function withdrawFundsForCreator(address _token) external onlyCreator(_token) {
-        // if (msg.sender != presaleInfo[_token].params.owner) {
-        //     revert NotCreator();
-        // }
-        if (!hasSoftCapReached(_token)) {
-            revert CannotClaim();
-        }
-        if (!_hasEnded(_token)) {
-            revert PresaleNotOver();
-        }
-        if (presaleInfo[_token].fundForCreator < 0) {
-            revert NoFundsToClaim();
-        }
-        uint256 amount = presaleInfo[_token].fundForCreator;
-
-        presaleInfo[_token].fundForCreator = 0;
-
-        if (presaleInfo[_token].params.fundType == FundType.BUSD) {
-            busd.transfer(msg.sender, amount);
-        } else if (presaleInfo[_token].params.fundType == FundType.BNB) {
-            (bool success,) = payable(msg.sender).call{value: amount}("");
-            if (!success) {
-                revert FailedToWithdrawTokens();
-            }
-        }
-        emit WithdrawFundsForCreator(_token, msg.sender, presaleInfo[_token].params.fundType, amount);
-    }
-
-    function withdrawTokensForCreator(address _token) external onlyCreator(_token) {
-        // if (msg.sender != presaleInfo[_token].params.owner) {
-        //     revert NotCreator();
-        // }
-        if (!_hasEnded(_token)) {
-            revert PresaleNotOver();
-        }
-        uint256 amount = presaleInfo[_token].params.maxTokensToSell;
-        if (hasSoftCapReached(_token)) {
-            for (uint8 i; i < presaleInfo[_token].roundsInfo.length; i++) {
-                uint256 funds = presaleInfo[_token].fundRaised[i];
-                presaleInfo[_token].fundRaised[i] = 0;
-                unchecked {
-                    amount -= funds * 1e18 / presaleInfo[_token].roundsInfo[i].pricePerToken;
-                }
-            }
-        }
-        IERC20(_token).transfer(msg.sender, amount);
-        emit WithdrawTokensForCreator(_token, msg.sender, amount);
-    }
-
-    function getRoundInfo(address _token) external view returns (RoundInfo[] memory) {
-        return presaleInfo[_token].roundsInfo;
-    }
-
-    function hasSoldOut(address _token, uint8 _round) public view returns (bool) {
-        RoundInfo storage info = presaleInfo[_token].roundsInfo[_round];
-        uint256 tokenAmount;
-        unchecked {
-            tokenAmount = presaleInfo[_token].fundRaised[_round] * 1e18 / info.pricePerToken;
-        }
-
-        if (tokenAmount >= info.tokensToSell) return true;
-        else return false;
-    }
-
-    function getRound(address _token) public view returns (int8) {
-        int8 ret = -1;
-        uint256 nowTime = block.timestamp;
-
-        RoundInfo[] storage _roundsInfo = presaleInfo[_token].roundsInfo;
-
-        if (nowTime < _roundsInfo[0].startTime) {
-            ret = -1; // any round is not started
-        } else if (nowTime >= _roundsInfo[0].startTime && nowTime < _roundsInfo[0].endTime) {
-            ret = 0; // in round 1
-        } else if (nowTime >= _roundsInfo[0].endTime && nowTime < _roundsInfo[1].startTime) {
-            ret = -2; // round 2 is not started
-        } else if (nowTime >= _roundsInfo[1].startTime && nowTime < _roundsInfo[1].endTime) {
-            ret = 1; // in round 2
-        } else if (nowTime >= _roundsInfo[1].endTime && nowTime < _roundsInfo[2].startTime) {
-            ret = -3; // round 3 is not started
-        } else if (nowTime >= _roundsInfo[2].startTime && nowTime < _roundsInfo[2].endTime) {
-            ret = 2; // in round 3
-        } else if (nowTime >= _roundsInfo[2].endTime) {
-            ret = -4; // all round is ended
-        }
-        return ret;
-    }
-
-    function refund(address _token) external {
-        if (!_hasEnded(_token)) {
-            revert PresaleNotOver();
-        }
-        if (hasSoftCapReached(_token)) {
-            revert PresaleNotFailed();
-        }
-
-        uint256 amount;
-        for (uint8 i; i < presaleInfo[_token].roundsInfo.length; i++) {
-            amount += presaleInfo[_token].contributions[i][msg.sender].contributedFund;
-            presaleInfo[_token].contributions[i][msg.sender].contributedFund = 0;
-        }
-
-        if (presaleInfo[_token].params.fundType == FundType.BUSD) {
-            busd.transfer(msg.sender, amount);
-        } else if (presaleInfo[_token].params.fundType == FundType.BNB) {
-            (bool success,) = payable(msg.sender).call{value: amount}("");
-            if (!success) {
-                revert FailedToWithdrawFunds();
-            }
-        }
-        emit Refund(_token, msg.sender, presaleInfo[_token].params.fundType, amount);
     }
 
     function setAffiliateSetting(address token, AffiliateSettingInput memory _setting)
@@ -488,15 +340,75 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         emit AffiliateSettingSet(token, affiliateSettings[token], presaleInfo[token].affiliateSetup);
     }
 
-    function changeCreateFee(uint256 _newValue) external onlyOwner {
-        createFee = _newValue;
+    function withdrawFundsForCreator(address _token) external override nonReentrant onlyCreator(_token) {
+        if (!hasSoftCapReached(_token)) {
+            revert CannotClaim();
+        }
+        if (!_hasEnded(_token)) {
+            revert PresaleNotOver();
+        }
+        if (presaleInfo[_token].fundForCreator < 0) {
+            revert NoFundsToClaim();
+        }
+        uint256 amount = presaleInfo[_token].fundForCreator;
+
+        presaleInfo[_token].fundForCreator = 0;
+
+        if (presaleInfo[_token].params.fundType == FundType.BUSD) {
+            busd.transfer(msg.sender, amount);
+        } else if (presaleInfo[_token].params.fundType == FundType.BNB) {
+            (bool success,) = payable(msg.sender).call{value: amount}("");
+            if (!success) {
+                revert FailedToWithdrawTokens();
+            }
+        }
+        emit WithdrawFundsForCreator(_token, msg.sender, presaleInfo[_token].params.fundType, amount);
     }
 
-    // function changeRefferalRates(uint256[REFERRAL_DEEP] calldata _newRates) external onlyOwner {
-    //     referralRates = _newRates;
-    // }
+    function withdrawTokensForCreator(address _token) external override nonReentrant onlyCreator(_token) {
+        if (!_hasEnded(_token)) {
+            revert PresaleNotOver();
+        }
+        uint256 amount = presaleInfo[_token].params.maxTokensToSell;
+        if (hasSoftCapReached(_token)) {
+            for (uint8 i; i < presaleInfo[_token].roundsInfo.length; i++) {
+                uint256 funds = presaleInfo[_token].fundRaised[i];
+                presaleInfo[_token].fundRaised[i] = 0;
+                unchecked {
+                    amount -= (funds * 1e18) / presaleInfo[_token].roundsInfo[i].pricePerToken;
+                }
+            }
+        }
+        IERC20(_token).transfer(msg.sender, amount);
+        emit WithdrawTokensForCreator(_token, msg.sender, amount);
+    }
 
-    function claimRefReward(address _token) external nonReentrant onlyRegisterUser {
+    function refund(address _token) external override nonReentrant {
+        if (!_hasEnded(_token)) {
+            revert PresaleNotOver();
+        }
+        if (hasSoftCapReached(_token)) {
+            revert PresaleNotFailed();
+        }
+
+        uint256 amount;
+        for (uint8 i; i < presaleInfo[_token].roundsInfo.length; i++) {
+            amount += presaleInfo[_token].contributions[i][msg.sender].contributedFund;
+            presaleInfo[_token].contributions[i][msg.sender].contributedFund = 0;
+        }
+
+        if (presaleInfo[_token].params.fundType == FundType.BUSD) {
+            busd.transfer(msg.sender, amount);
+        } else if (presaleInfo[_token].params.fundType == FundType.BNB) {
+            (bool success,) = payable(msg.sender).call{value: amount}("");
+            if (!success) {
+                revert FailedToWithdrawFunds();
+            }
+        }
+        emit Refund(_token, msg.sender, presaleInfo[_token].params.fundType, amount);
+    }
+
+    function claimRefReward(address _token) external override nonReentrant onlyRegisterUser {
         if (presaleInfo[_token].affiliateSetup != AffiliateStatus.Active) {
             revert NotSupportedForRefReward();
         }
@@ -524,15 +436,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         emit RefRewardClaim(_token, msg.sender, presaleInfo[_token].params.fundType, _amount);
     }
 
-    // function withdrawFees(address _token) external onlyOwner {
-    //     if (presaleInfo[_token].params.fundType == FundType.BUSD) {
-    //         withdrawTokensForFee(_token);
-    //     } else {
-    //         withdrawFundsForFee(_token);
-    //     }
-    // }
-
-    function withdrawFundsForFee(address _token) external onlyOwner {
+    function withdrawFundsForFee(address _token) external override onlyOwner {
         if (!hasSoftCapReached(_token)) {
             revert CannotClaim();
         }
@@ -557,7 +461,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         emit WithdrawFundsForFee(_token, presaleInfo[_token].params.fundType, amount);
     }
 
-    function withdrawTokensForFee(address _token) external onlyOwner {
+    function withdrawTokensForFee(address _token) external override onlyOwner {
         if (!hasSoftCapReached(_token)) {
             revert CannotClaim();
         }
@@ -576,10 +480,93 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         emit WithdrawTokensForFee(_token, amount);
     }
 
-    function updateRefRewards(address _token, int8 _round, uint256 _amount, uint256 bnbForOwner)
-        internal
-        returns (uint256)
-    {
+    function withdrawCreateFee() external override onlyOwner {
+        uint256 _createFee = createFee;
+        createFee = 0;
+
+        (bool success,) = payable(msg.sender).call{value: _createFee}("");
+        if (!success) {
+            revert FailedToWithdrawFee();
+        }
+        emit WithdrawCreateFee(msg.sender, _createFee);
+    }
+
+    function changeCreateFee(uint256 _newValue) external override onlyOwner {
+        emit UpdatedFee(createFee, createFee = _newValue);
+    }
+
+    function getRoundInfo(address _token) external view returns (RoundInfo[] memory) {
+        return presaleInfo[_token].roundsInfo;
+    }
+
+    function hasSoldOut(address _token, uint8 _round) public view returns (bool) {
+        uint256 tokenAmount;
+        unchecked {
+            tokenAmount =
+                (presaleInfo[_token].fundRaised[_round] * 1e18) / presaleInfo[_token].roundsInfo[_round].pricePerToken;
+        }
+
+        if (tokenAmount >= presaleInfo[_token].roundsInfo[_round].tokensToSell) return true;
+        else return false;
+    }
+
+    function getClaimableTokenAmount(address _token, uint8 _round, address _user) public view returns (uint256) {
+        RoundInfo storage info = presaleInfo[_token].roundsInfo[_round];
+        ContributionInfo memory contribution = presaleInfo[_token].contributions[_round][_user];
+        uint256 passedTime = (block.timestamp - contribution.purchaseTime) / _MONTH;
+        if (passedTime > info.lockMonths) {
+            uint256 months = (block.timestamp - contribution.purchaseTime) / _MONTH - info.lockMonths;
+            if (months > presaleInfo[_token].params.releaseMonth) months = presaleInfo[_token].params.releaseMonth;
+            uint256 tokenAmount;
+
+            unchecked {
+                tokenAmount = (months * contribution.totalClaimableToken) / presaleInfo[_token].params.releaseMonth
+                    - contribution.claimedToken;
+            }
+
+            return tokenAmount;
+        } else {
+            return 0;
+        }
+    }
+
+    function getRound(address _token) public view returns (int8) {
+        int8 ret = -1;
+        uint256 nowTime = block.timestamp;
+
+        RoundInfo[] storage _roundsInfo = presaleInfo[_token].roundsInfo;
+
+        if (nowTime < _roundsInfo[0].startTime) {
+            ret = -1; // any round is not started
+        } else if (nowTime >= _roundsInfo[0].startTime && nowTime < _roundsInfo[0].endTime) {
+            ret = 0; // in round 1
+        } else if (nowTime >= _roundsInfo[0].endTime && nowTime < _roundsInfo[1].startTime) {
+            ret = -2; // round 2 is not started
+        } else if (nowTime >= _roundsInfo[1].startTime && nowTime < _roundsInfo[1].endTime) {
+            ret = 1; // in round 2
+        } else if (nowTime >= _roundsInfo[1].endTime && nowTime < _roundsInfo[2].startTime) {
+            ret = -3; // round 3 is not started
+        } else if (nowTime >= _roundsInfo[2].startTime && nowTime < _roundsInfo[2].endTime) {
+            ret = 2; // in round 3
+        } else if (nowTime >= _roundsInfo[2].endTime) {
+            ret = -4; // all round is ended
+        }
+        return ret;
+    }
+
+    function hasSoftCapReached(address _token) public view returns (bool) {
+        RoundInfo[] storage roundInfos = presaleInfo[_token].roundsInfo;
+        uint256 totalSoldTokenAmount;
+        for (uint8 i; i < roundInfos.length; i++) {
+            unchecked {
+                totalSoldTokenAmount += (presaleInfo[_token].fundRaised[i] * 1e18) / roundInfos[i].pricePerToken;
+            }
+        }
+        if (totalSoldTokenAmount >= presaleInfo[_token].params.minTokensToSell) return true;
+        return false;
+    }
+
+    function updateRefRewards(address _token, int8 _round, uint256 _amount) internal returns (uint256 totalRefReward) {
         if (presaleInfo[_token].affiliateSetup == AffiliateStatus.Active) {
             uint256 reward;
             address[] memory referrers = register.getReferrerAddresses(msg.sender);
@@ -589,9 +576,9 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
             for (uint256 i; i < REFERRAL_DEEP; i++) {
                 if (referrers[i] != address(0) && levelsInfo[i].percent != 0) {
                     unchecked {
-                        reward = (_amount * levelsInfo[i].percent) / 10000;
+                        reward = (_amount * levelsInfo[i].percent) / _PERCENT;
                         presaleInfo[_token].fundForReferrer[referrers[i]] += reward;
-                        bnbForOwner -= reward;
+                        totalRefReward += reward;
                     }
                     emit SetRefReward(
                         _token, referrers[i], msg.sender, uint8(i + 1), uint8(_round), FundType.BUSD, reward
@@ -599,13 +586,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
                 }
             }
         }
-
-        return bnbForOwner;
     }
-
-    // function getRefferalRates(address _token) external view returns (uint256[REFERRAL_DEEP] memory) {
-    //     return affiliateSettings[_token];
-    // }
 
     function _hasEnded(address _token) internal view returns (bool) {
         if (getRound(_token) == -4) {

@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+// SPDX-License-Identifier: LICENSED
+pragma solidity 0.8.19;
 
 interface IRegistration {
     function isRegistered(address _user) external view returns (bool);
@@ -7,6 +7,67 @@ interface IRegistration {
 }
 
 interface ILaunchpadV2 {
+    error UnregisteredUser();
+    error AlreadyCreated();
+    error InsufficientFees();
+    error MaxValueGreaterThanMin();
+    error InsufficientTokens();
+    error CallerMustBeOwner();
+    error IncorrectRoundsCount();
+    error IncorrectAmountToSell();
+    error NotCreated();
+    error SaleAlreadyLive();
+    error NotOwner();
+    error TokensAlreadySold();
+    error PurchaseWithOnlyBUSD();
+    error IncorrectMinContribution();
+    error IncorrectMaxContribution();
+    error PurchaseWithOnlyBNB();
+    error SellLimitExceeding();
+    error CannotClaim();
+    error NoTokensToClaim();
+    error Locked();
+    error NotCreator();
+    error PresaleNotOver();
+    error NoFundsToClaim();
+    error FailedToWithdrawTokens();
+    error PresaleNotFailed();
+    error FailedToWithdrawFunds();
+    error FailedToWithdrawFee();
+    error RoundNotOver();
+    error NoRewardsToClaim();
+    error NotSupportedForRefReward();
+    error AffiliateStatusIsPending();
+    error AlreadyAffiliateSettingUpdated();
+
+    event CreatePresale(address indexed token, address creator, PresaleInfoParams infoParams, RoundInfo[] roundsParams);
+    event UpdatePresale(address indexed token, PresaleInfoParams infoParams, RoundInfo[] roundsParams);
+    event AffiliateSettingSet(address, AffiliateSetting[] affiliateSetting, AffiliateStatus isActive);
+    event TokenPurchaseWithBNB(
+        address indexed token, address indexed beneficiary, uint8 round, uint256 bnbAmount, uint256 bnbAmountForOwner
+    );
+    event TokenPurchaseWithBUSD(
+        address indexed token, address indexed beneficiary, uint8 round, uint256 busdAmount, uint256 busdAmountForOwner
+    );
+    event TokenClaim(address indexed token, address indexed beneficiary, uint8 round, uint256 tokenAmount);
+    event RefRewardClaim(address indexed token, address indexed referrer, FundType fundType, uint256 amount);
+    event SetRefReward(
+        address indexed token,
+        address indexed referrer,
+        address indexed user,
+        uint8 level,
+        uint8 round,
+        FundType fundType,
+        uint256 amount
+    );
+    event WithdrawFundsForFee(address indexed token, FundType fundType, uint256 amount);
+    event WithdrawTokensForFee(address indexed token, uint256 amount);
+    event WithdrawCreateFee(address indexed receiver, uint256 amount);
+    event WithdrawFundsForCreator(address indexed token, address indexed creator, FundType fundType, uint256 amount);
+    event WithdrawTokensForCreator(address indexed token, address indexed creator, uint256 amount);
+    event Refund(address indexed token, address indexed buyer, FundType fundType, uint256 amount);
+    event UpdatedFee(uint256 oldFee, uint256 newFee);
+
     struct ContributionInfo {
         uint256 contributedFund;
         uint256 purchaseTime;
@@ -76,68 +137,18 @@ interface ILaunchpadV2 {
         uint256 percent;
     }
 
-    event AffiliateSettingSet(address, AffiliateSetting[] affiliateSetting, AffiliateStatus isActive);
-    event CreatePresale(address indexed token, address creator, PresaleInfoParams infoParams, RoundInfo[] roundsParams);
-    event UpdatePresale(address indexed token, PresaleInfoParams infoParams, RoundInfo[] roundsParams);
-    event TokenPurchaseWithBNB(
-        address indexed token, address indexed beneficiary, uint8 round, uint256 bnbAmount, uint256 bnbAmountForOwner
-    );
-    event TokenPurchaseWithBUSD(
-        address indexed token, address indexed beneficiary, uint8 round, uint256 busdAmount, uint256 busdAmountForOwner
-    );
-    event TokenClaim(address indexed token, address indexed beneficiary, uint8 round, uint256 tokenAmount);
-    event RefRewardClaim(address indexed token, address indexed referrer, FundType fundType, uint256 amount);
-    event SetRefReward(
-        address indexed token,
-        address indexed referrer,
-        address indexed user,
-        uint8 level,
-        uint8 round,
-        FundType fundType,
-        uint256 amount
-    );
-    event WithdrawFundsForFee(address indexed token, FundType fundType, uint256 amount);
-    event WithdrawTokensForFee(address indexed token, uint256 amount);
-    event WithdrawFundsForCreator(address indexed token, address indexed creator, FundType fundType, uint256 amount);
-    event WithdrawTokensForCreator(address indexed token, address indexed creator, uint256 amount);
-    event Refund(address indexed token, address indexed buyer, FundType fundType, uint256 amount);
-
-    error UnregisteredUser();
-    error AlreadyCreated();
-    error InsufficientFees();
-    error MaxValueGreaterThanMin();
-    error InsufficientTokens();
-    error CallerMustBeOwner();
-    error IncorrectRoundsCount();
-    error IncorrectAmountToSell();
-    error NotCreated();
-    error SaleAlreadyLive();
-    error NotOwner();
-    error TokensAlreadySold();
-    error PurchaseWithOnlyBUSD();
-    error IncorrectMinContribution();
-    error IncorrectMaxContribution();
-    error PurchaseWithOnlyBNB();
-    error SellLimitExceeding();
-    error CannotClaim();
-    error NoTokensToClaim();
-    error Locked();
-    error NotCreator();
-    error PresaleNotOver();
-    error NoFundsToClaim();
-    error FailedToWithdrawTokens();
-    error PresaleNotFailed();
-    error FailedToWithdrawFunds();
-    error RoundNotOver();
-    error NoRewardsToClaim();
-    error NotSupportedForRefReward();
-    error AffiliateStatusIsPending();
-    error AlreadyAffiliateSettingUpdated();
-
     function createPresale(PresaleInfoParams calldata _infoParams, RoundInfo[] memory _roundsParams) external payable;
     function updatePresale(PresaleInfoParams memory _infoParams, RoundInfo[] memory _roundsParams) external;
+    function setAffiliateSetting(address token, AffiliateSettingInput memory _setting) external;
     function tokenPurchaseWithBUSD(address _token, uint256 _busdAmount) external;
     function tokenPurchaseWithBNB(address _token) external payable;
     function claimTokens(address _token, uint8 _round) external;
-    function setAffiliateSetting(address token, AffiliateSettingInput memory _setting) external;
+    function changeCreateFee(uint256 _newValue) external;
+    function withdrawTokensForFee(address _token) external;
+    function withdrawFundsForFee(address _token) external;
+    function claimRefReward(address _token) external;
+    function refund(address _token) external;
+    function withdrawTokensForCreator(address _token) external;
+    function withdrawFundsForCreator(address _token) external;
+    function withdrawCreateFee() external;
 }
