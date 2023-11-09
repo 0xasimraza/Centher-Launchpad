@@ -103,7 +103,7 @@ const config: HardhatUserConfig = {
     bsc: getChainConfig("bsc"),
   },
   solidity: {
-    version: "0.8.13",
+    version: "0.8.19",
     settings: {
       optimizer: {
         enabled: true,
