@@ -39,6 +39,7 @@ interface ILaunchpadV2 {
     error NotSupportedForRefReward();
     error AffiliateStatusIsPending();
     error AlreadyAffiliateSettingUpdated();
+    error ZeroBNB();
 
     event CreatePresale(address indexed token, address creator, PresaleInfoParams infoParams, RoundInfo[] roundsParams);
     event UpdatePresale(address indexed token, PresaleInfoParams infoParams, RoundInfo[] roundsParams);
@@ -144,7 +145,6 @@ interface ILaunchpadV2 {
     function tokenPurchaseWithBNB(address _token) external payable;
     function claimTokens(address _token, uint8 _round) external;
     function changeCreateFee(uint256 _newValue) external;
-    function withdrawTokensForFee(address _token) external;
     function withdrawFundsForFee(address _token) external;
     function claimRefReward(address _token) external;
     function refund(address _token) external;
