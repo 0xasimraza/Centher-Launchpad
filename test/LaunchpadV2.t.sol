@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity 0.8.19;
 
 import "forge-std/Test.sol";
 import "forge-std/console2.sol";
@@ -2667,7 +2667,7 @@ contract LaunchpadV2Test is Test {
 
         instance.claimTokens(address(deXa), 0);
 
-        // assertEq(deXa.balanceOf(user2), 1000e18, "Not equal");
+        assertEq(deXa.balanceOf(user2), 1000e18, "Not equal");
 
         vm.warp(block.timestamp + 52 weeks * 2);
 
@@ -2677,14 +2677,134 @@ contract LaunchpadV2Test is Test {
         busd.transfer(address(1), busd.balanceOf(user1));
 
         instance.withdrawFundsForCreator(address(deXa));
-        // assertEq(busd.balanceOf(user1), 990e18, "Not equal");
+        assertEq(busd.balanceOf(user1), 890e18, "Not equal");
 
         changePrank(owner);
 
         //flush old funds
         busd.transfer(address(1), busd.balanceOf(owner));
 
-        instance.withdrawTokensForFee(address(deXa));
+        instance.withdrawFundsForFee(address(deXa));
+        assertEq(busd.balanceOf(owner), 10e18, "Not equal");
+        changePrank(user1);
+
+        instance.claimRefReward(address(deXa));
+        changePrank(owner);
+
+        instance.claimRefReward(address(deXa));
+
+        assertEq(busd.balanceOf(address(instance)), 0, "Not equal");
+    }
+
+    function testShouldClaimRefRewardsUsingBNB() public {
+        vm.startPrank(owner);
+        address[] memory _users = new address[](1);
+        _users[0] = address(owner);
+
+        address[] memory _refs = new address[](1);
+        _refs[0] = address(0);
+
+        register.registerForOwnerBatch(_users, _refs);
+        deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+        deal(user1, 5 ether);
+
+        changePrank(user1);
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 1e18,
+            maxTokensToSell: 1000000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            isRefSupport: true,
+            fundType: ILaunchpadV2.FundType.BNB
+        });
+
+        ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
+        _roundsParams[0] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 86400),
+            endTime: (block.timestamp + 12 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 50000e18,
+            pricePerToken: 500000000000000
+        });
+        _roundsParams[1] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 12 weeks),
+            endTime: (block.timestamp + 24 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 25000e18,
+            pricePerToken: 750000000000000
+        });
+        _roundsParams[2] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 24 weeks),
+            endTime: (block.timestamp + 36 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 10000e18,
+            pricePerToken: 10000000000000
+        });
+        deXa.approve(address(instance), 1500000e18);
+        instance.createPresale{value: 0.001 ether}(_infoParams, _roundsParams);
+
+        assertEq(instance.createdPresale(_infoParams.token), true, "Not Created");
+
+        ILaunchpadV2.AffiliateSettingInput memory _setting = ILaunchpadV2.AffiliateSettingInput({
+            levelOne: 600,
+            levelTwo: 400,
+            levelThree: 200,
+            levelFour: 200,
+            levelFive: 200,
+            levelSix: 200
+        });
+
+        instance.setAffiliateSetting(address(deXa), _setting);
+
+        vm.warp(block.timestamp + 86400);
+        changePrank(user2);
+        deal(user2, 5 ether);
+
+        instance.tokenPurchaseWithBNB{value: 3 ether}(_infoParams.token);
+
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
+
+        assertEq(raisingFundForPresale, 3 ether, "Not equal");
+
+        vm.warp(block.timestamp + _MONTH * 4);
+
+        instance.claimTokens(address(deXa), 0);
+
+        assertEq(deXa.balanceOf(user2), 600e18, "Not Equal");
+
+        vm.warp(block.timestamp + _MONTH * 9);
+        instance.claimTokens(address(deXa), 0);
+
+        assertEq(deXa.balanceOf(user2), 6000e18, "Not Equal");
+
+        vm.warp(block.timestamp + 52 weeks * 2);
+
+        changePrank(user1);
+
+        //flush old funds
+        busd.transfer(address(1), busd.balanceOf(user1));
+
+        instance.withdrawFundsForCreator(address(deXa));
+        // assertEq(busd.balanceOf(user1), 890e18, "Not equal");
+
+        changePrank(owner);
+
+        //flush old funds
+        busd.transfer(address(1), busd.balanceOf(owner));
+
+        instance.withdrawFundsForFee(address(deXa));
         // assertEq(busd.balanceOf(owner), 10e18, "Not equal");
         changePrank(user1);
 
@@ -2692,6 +2812,127 @@ contract LaunchpadV2Test is Test {
         changePrank(owner);
 
         instance.claimRefReward(address(deXa));
+
+        instance.withdrawCreateFee();
+
+        assertEq(address(instance).balance, 0, "Not equal");
+    }
+
+    function testShouldNotClaimRefRewardsUsingBNB() public {
+        vm.startPrank(owner);
+        address[] memory _users = new address[](1);
+        _users[0] = address(owner);
+
+        address[] memory _refs = new address[](1);
+        _refs[0] = address(0);
+
+        register.registerForOwnerBatch(_users, _refs);
+        deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+        deal(user1, 0.001 ether);
+
+        changePrank(user1);
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 10000e18,
+            maxTokensToSell: 1000000e18,
+            roundDeep: 3,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            isRefSupport: true,
+            fundType: ILaunchpadV2.FundType.BNB
+        });
+
+        ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
+        _roundsParams[0] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 86400),
+            endTime: (block.timestamp + 12 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 50000e18,
+            pricePerToken: 500000000000000
+        });
+        _roundsParams[1] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 12 weeks),
+            endTime: (block.timestamp + 24 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 25000e18,
+            pricePerToken: 750000000000000
+        });
+        _roundsParams[2] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 24 weeks),
+            endTime: (block.timestamp + 36 weeks),
+            lockMonths: 3,
+            minContribution: 1e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 10000e18,
+            pricePerToken: 10000000000000
+        });
+        deXa.approve(address(instance), 1500000e18);
+        instance.createPresale{value: 0.001 ether}(_infoParams, _roundsParams);
+
+        assertEq(instance.createdPresale(_infoParams.token), true, "Not Created");
+
+        ILaunchpadV2.AffiliateSettingInput memory _setting = ILaunchpadV2.AffiliateSettingInput({
+            levelOne: 600,
+            levelTwo: 400,
+            levelThree: 200,
+            levelFour: 200,
+            levelFive: 200,
+            levelSix: 200
+        });
+
+        instance.setAffiliateSetting(address(deXa), _setting);
+
+        vm.warp(block.timestamp + 86400);
+        changePrank(user2);
+        deal(user2, 5 ether);
+
+        instance.tokenPurchaseWithBNB{value: 3 ether}(_infoParams.token);
+
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
+
+        assertEq(raisingFundForPresale, 3 ether, "Not equal");
+
+        vm.warp(block.timestamp + _MONTH * 4);
+        bytes4 selector = bytes4(keccak256("CannotClaim()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
+        instance.claimTokens(address(deXa), 0);
+
+        vm.warp(block.timestamp + _MONTH * 9);
+
+        vm.warp(block.timestamp + 52 weeks * 2);
+
+        changePrank(user1);
+
+        //flush old funds
+        busd.transfer(address(1), busd.balanceOf(user1));
+        vm.expectRevert(abi.encodeWithSelector(selector));
+        instance.withdrawFundsForCreator(address(deXa));
+
+        changePrank(owner);
+
+        //flush old funds
+        busd.transfer(address(1), busd.balanceOf(owner));
+        vm.expectRevert(abi.encodeWithSelector(selector));
+        instance.withdrawFundsForFee(address(deXa));
+
+        changePrank(user1);
+        vm.expectRevert(abi.encodeWithSelector(selector));
+        instance.claimRefReward(address(deXa));
+
+        changePrank(owner);
+        vm.expectRevert(abi.encodeWithSelector(selector));
+        instance.claimRefReward(address(deXa));
+
+        instance.withdrawCreateFee();
+
 
     }
 }
