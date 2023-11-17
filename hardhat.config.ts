@@ -4,7 +4,7 @@ import "@typechain/hardhat";
 import "hardhat-preprocessor";
 import { HardhatUserConfig, task } from "hardhat/config";
 
-import "@nomicfoundation/hardhat-toolbox"
+import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
 // import "@nomiclabs/hardhat-etherscan";
 import { NetworkUserConfig } from "hardhat/types";
@@ -13,6 +13,7 @@ import { config as dotenvConfig } from "dotenv";
 
 import example from "./tasks/example";
 import deploy from "./tasks/deploy";
+import deploy2 from "./tasks/deploy";
 import { resolve } from "path";
 
 dotenvConfig({ path: resolve(__dirname, "./.env") });
@@ -45,6 +46,7 @@ function getRemappings() {
 
 task("example", "Example task").setAction(example);
 task("deploy", "Deploying Launchpad").setAction(deploy);
+task("deploy2", "Deploying LaunchpadV2").setAction(deploy2);
 
 // Ensure that we have all the environment variables we need.
 const mnemonic = process.env.MNEMONIC;
