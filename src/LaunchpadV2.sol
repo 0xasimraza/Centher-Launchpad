@@ -5,12 +5,17 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {ILaunchpadV2, IRegistration} from "./interfaces/ILaunchpadV2.sol";
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
 // import "forge-std/console2.sol";
 
-contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
+import "@openzeppelinUpgradeable/contracts/access/OwnableUpgradeable.sol";
+import "@openzeppelinUpgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
+
+// import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+// import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+// contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
+contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+    bool private initialized;
     uint256 public createFee;
 
     uint256 public constant REFERRAL_DEEP = 6;
@@ -22,7 +27,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
     mapping(address => bool) public createdPresale;
 
     IERC20 public busd;
-    IRegistration public immutable register;
+    IRegistration public register;
 
     modifier onlyRegisterUser() {
         if (!(register.isRegistered(msg.sender))) {
@@ -38,7 +43,18 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         _;
     }
 
-    constructor(address _register, address _busd) Ownable() ReentrancyGuard() {
+    // constructor(address _register, address _busd) Ownable() ReentrancyGuard() {
+    //     createFee = 0.001 ether;
+
+    //     busd = IERC20(_busd);
+    //     register = IRegistration(_register);
+    // }
+
+    function initialize(address _register, address _busd) public initializer {
+        require(!initialized, "Contract instance has already been initialized");
+        __Ownable_init();
+        __ReentrancyGuard_init();
+
         createFee = 0.001 ether;
 
         busd = IERC20(_busd);
@@ -170,7 +186,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
         RoundInfo storage info = presaleInfo[_token].roundsInfo[uint8(_round)];
 
         if (presaleInfo[_token].params.fundType != FundType.BNB) {
-            revert PurchaseWithOnlyBNB();
+            revert PurchaseWithOnlyBUSD();
         }
         uint256 _bnbAmount = msg.value;
         if (_bnbAmount < info.minContribution) {
@@ -228,7 +244,7 @@ contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
             revert SellLimitExceeding();
         }
         if (presaleInfo[_token].params.fundType != FundType.BUSD) {
-            revert PurchaseWithOnlyBUSD();
+            revert PurchaseWithOnlyBNB();
         }
         if (_busdAmount < info.minContribution) {
             revert IncorrectMinContribution();
