@@ -56,6 +56,58 @@ export default async function deploy(
   }
 }
 
+export default async function deploy2(
+  params: any,
+  hre: HardhatRuntimeEnvironment
+): Promise<void> {
+  const ethers = hre.ethers;
+  const upgrades = hre.upgrades;
+
+  const [account] = await ethers.getSigners();
+  console.log("connected account: ", account.address);
+
+  const LaunchpadV2 = await ethers.getContractFactory("LaunchpadV2");
+
+  //testnet
+  let args = [
+    "0x538584360a8ec67338Ce73721585aC386d7a4e6E", // centher registration
+    "0x1B855BF0e0eDBF394cB8F74D906d8d93A1C2D6e0", // usdt
+  ];
+
+  ////mainnet
+  // let args = [
+  //   "", // dexa
+  //   "", // ntr
+  //   "", // usdt
+  //   "", // centher registration
+  //   "", // wallet address
+  //   "", // company address
+  // ];
+
+  const instance = await upgrades.deployProxy(LaunchpadV2, args, {
+    initializer: "initialize",
+  });
+  await instance.waitForDeployment();
+
+  await delay(26000);
+  console.log("Deployed Address", instance.target);
+
+  // Upgrading
+  // const DeXaPresaleV2 = await ethers.getContractFactory("LaunchpadV2");
+  // const instance = await upgrades.upgradeProxy(
+  //   "0x5Eaf2D08FA62220AC064Df5e47521cB7cc16F964",
+  //   LaunchpadV2
+  // ); //testnet
+  // console.log("Deployed Address", instance.target);
+
+  if (hre.network.name != "hardhat") {
+    await hre.run("verify:verify", {
+      address: instance.target,
+      constructorArguments: [],
+    });
+  }
+}
+
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
