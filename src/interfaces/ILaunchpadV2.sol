@@ -109,6 +109,7 @@ interface ILaunchpadV2 {
         uint256 releaseMonth;
         bool isRefSupport;
         FundType fundType;
+        string metadata;
     }
 
     struct PresaleInfo {

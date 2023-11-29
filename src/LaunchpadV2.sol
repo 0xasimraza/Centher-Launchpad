@@ -17,9 +17,11 @@ import "@openzeppelinUpgradeable/contracts/security/ReentrancyGuardUpgradeable.s
 contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     bool private initialized;
     uint256 public createFee;
+    uint256 public collectedFees;
 
     uint256 public constant REFERRAL_DEEP = 6;
-    uint256 private constant _MONTH = 86400 * 30;
+    // uint256 private constant _MONTH = 86400 * 30;
+    uint256 _MONTH;
     uint256 private constant _PERCENT = 10000;
 
     mapping(address => PresaleInfo) public presaleInfo;
@@ -59,6 +61,9 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
 
         busd = IERC20(_busd);
         register = IRegistration(_register);
+
+        //remove before production
+        _MONTH = 600;
     }
 
     function createPresale(PresaleInfoParams calldata _infoParams, RoundInfo[] memory _roundsParams)
@@ -108,7 +113,7 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
         for (uint256 i; i < roundLength; i++) {
             presaleInfo[_infoParams.token].roundsInfo.push(_roundsParams[i]);
         }
-
+        collectedFees += msg.value;
         createdPresale[_infoParams.token] = true;
 
         emit CreatePresale(_infoParams.token, msg.sender, _infoParams, _roundsParams);
@@ -470,8 +475,9 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
     }
 
     function withdrawCreateFee() external override onlyOwner {
-        uint256 _createFee = createFee;
-        createFee = 0;
+        uint256 _createFee = collectedFees;
+        // uint256 _createFee = address(this).balance;
+        collectedFees = 0;
 
         (bool success,) = payable(msg.sender).call{value: _createFee}("");
         if (!success) {
