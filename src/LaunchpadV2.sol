@@ -5,23 +5,16 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {ILaunchpadV2, IRegistration} from "./interfaces/ILaunchpadV2.sol";
 
-// import "forge-std/console2.sol";
-
 import "@openzeppelinUpgradeable/contracts/access/OwnableUpgradeable.sol";
 import "@openzeppelinUpgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 
-// import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-// import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
-// contract LaunchpadV2 is ILaunchpadV2, Ownable, ReentrancyGuard {
 contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     bool private initialized;
     uint256 public createFee;
     uint256 public collectedFees;
 
     uint256 public constant REFERRAL_DEEP = 6;
-    // uint256 private constant _MONTH = 86400 * 30;
-    uint256 _MONTH;
+    uint256 private constant _MONTH = 86400 * 30;
     uint256 private constant _PERCENT = 10000;
 
     mapping(address => PresaleInfo) public presaleInfo;
@@ -45,13 +38,6 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
         _;
     }
 
-    // constructor(address _register, address _busd) Ownable() ReentrancyGuard() {
-    //     createFee = 0.001 ether;
-
-    //     busd = IERC20(_busd);
-    //     register = IRegistration(_register);
-    // }
-
     function initialize(address _register, address _busd) public initializer {
         require(!initialized, "Contract instance has already been initialized");
         __Ownable_init();
@@ -61,9 +47,6 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
 
         busd = IERC20(_busd);
         register = IRegistration(_register);
-
-        //remove before production
-        _MONTH = 600;
     }
 
     function createPresale(PresaleInfoParams calldata _infoParams, RoundInfo[] memory _roundsParams)
@@ -476,7 +459,6 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
 
     function withdrawCreateFee() external override onlyOwner {
         uint256 _createFee = collectedFees;
-        // uint256 _createFee = address(this).balance;
         collectedFees = 0;
 
         (bool success,) = payable(msg.sender).call{value: _createFee}("");
@@ -498,12 +480,20 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
         return presaleInfo[_token].fundRaised[_round];
     }
 
-    function getRoundUserContribution(address _token, uint8 _round) external view returns (ContributionInfo memory) {
-        return presaleInfo[_token].contributions[_round][msg.sender];
+    function getRoundUserContribution(address contributor, address _token, uint8 _round)
+        external
+        view
+        returns (ContributionInfo memory)
+    {
+        return presaleInfo[_token].contributions[_round][contributor];
     }
 
     function getTotalRaisedFund(address _token) external view returns (uint256) {
         return presaleInfo[_token].raisingFundForPresale;
+    }
+
+    function getFundForReferrer(address _user, address _token) external view returns (uint256) {
+        return presaleInfo[_token].fundForReferrer[_user];
     }
 
     function hasSoldOut(address _token, uint8 _round) public view returns (bool) {

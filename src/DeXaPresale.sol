@@ -6,14 +6,14 @@ import "./interfaces/IRegistration.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-// import "@openzeppelinUpgradeable/contracts/access/OwnableUpgradeable.sol";
-// import "@openzeppelinUpgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelinUpgradeable/contracts/access/OwnableUpgradeable.sol";
+import "@openzeppelinUpgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 
-// contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPresale {
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+contract DeXaPresale is OwnableUpgradeable, ReentrancyGuardUpgradeable, IDeXaPresale {
+    // import "@openzeppelin/contracts/access/Ownable.sol";
+    // import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
+    // contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     uint8 public constant REFERRAL_DEEP = 6;
 
     uint32 public releaseMonth;
@@ -53,31 +53,9 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
         _;
     }
 
-    constructor(address _deXa, address _ntr, address _busd, address _register, address _coreTeam, address _company)
-        Ownable()
-    {
-        deXa = _deXa;
-        ntr = _ntr;
-        busd = _busd;
-        register = _register;
-        coreTeamAddress = _coreTeam;
-        companyAddress = _company;
-        percentForCoreTeam = 1000;
-        releaseMonth = 8; //10;
-    }
-
-    // function initialize(
-    //     address _deXa,
-    //     address _ntr,
-    //     address _busd,
-    //     address _register,
-    //     address _coreTeam,
-    //     address _company
-    // ) public initializer {
-    //     require(!initialized, "Contract instance has already been initialized");
-    //     initialized = true;
-    //     __Ownable_init();
-    //     __ReentrancyGuard_init();
+    // constructor(address _deXa, address _ntr, address _busd, address _register, address _coreTeam, address _company)
+    //     Ownable()
+    // {
     //     deXa = _deXa;
     //     ntr = _ntr;
     //     busd = _busd;
@@ -85,8 +63,30 @@ contract DeXaPresale is ReentrancyGuard, Ownable, IDeXaPresale {
     //     coreTeamAddress = _coreTeam;
     //     companyAddress = _company;
     //     percentForCoreTeam = 1000;
-    //     releaseMonth = 10;
+    //     releaseMonth = 8; //10;
     // }
+
+    function initialize(
+        address _deXa,
+        address _ntr,
+        address _busd,
+        address _register,
+        address _coreTeam,
+        address _company
+    ) public initializer {
+        require(!initialized, "Contract instance has already been initialized");
+        initialized = true;
+        __Ownable_init();
+        __ReentrancyGuard_init();
+        deXa = _deXa;
+        ntr = _ntr;
+        busd = _busd;
+        register = _register;
+        coreTeamAddress = _coreTeam;
+        companyAddress = _company;
+        percentForCoreTeam = 1000;
+        releaseMonth = 10;
+    }
 
     function tokenPurchaseWithBUSD(uint256 _busdAmount) external override onlyRegisterUser {
         int8 _round = getRound();

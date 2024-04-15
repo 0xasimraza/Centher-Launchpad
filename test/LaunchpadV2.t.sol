@@ -111,7 +111,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -165,7 +166,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -219,7 +221,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -276,7 +279,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -333,7 +337,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -389,7 +394,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -445,7 +451,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -501,7 +508,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -557,7 +565,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -613,7 +622,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -670,7 +680,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -716,7 +727,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
         bytes4 selector = bytes4(keccak256("MaxValueGreaterThanMin()"));
         vm.expectRevert(abi.encodeWithSelector(selector));
@@ -740,7 +752,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -786,7 +799,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
         bytes4 selector = bytes4(keccak256("IncorrectAmountToSell()"));
         vm.expectRevert(abi.encodeWithSelector(selector));
@@ -811,7 +825,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -875,7 +890,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -938,7 +954,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1001,7 +1018,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1070,7 +1088,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1143,7 +1162,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1210,7 +1230,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1274,7 +1295,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1338,7 +1360,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1402,7 +1425,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1465,7 +1489,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1532,7 +1557,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1608,7 +1634,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1684,7 +1711,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1753,7 +1781,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1824,7 +1853,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1905,7 +1935,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -1987,7 +2018,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -2068,7 +2100,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -2152,7 +2185,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -2246,7 +2280,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -2340,7 +2375,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -2434,7 +2470,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -2528,7 +2565,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: true,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -2602,7 +2640,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: true,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -2723,7 +2762,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: true,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -2845,7 +2885,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: true,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -2967,7 +3008,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: true,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -3080,7 +3122,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -3205,7 +3248,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: true,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -3317,7 +3361,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BUSD
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -3448,10 +3493,6 @@ contract LaunchpadV2Test is Test {
         deal(user3, 1 ether);
         deal(user4, 2.5 ether);
 
-        // deal({token: address(busd), to: address(user2), give: 1000e18});
-        // deal({token: address(busd), to: address(user3), give: 1000e18});
-        // deal({token: address(busd), to: address(user4), give: 2500e18});
-
         vm.startPrank(user1);
 
         ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
@@ -3464,7 +3505,8 @@ contract LaunchpadV2Test is Test {
             tokenFeeRate: 100,
             releaseMonth: 10,
             isRefSupport: false,
-            fundType: ILaunchpadV2.FundType.BNB
+            fundType: ILaunchpadV2.FundType.BNB,
+            metadata: ""
         });
 
         ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
@@ -3503,38 +3545,27 @@ contract LaunchpadV2Test is Test {
         vm.warp(block.timestamp + 86400);
 
         changePrank(user2);
-        // IERC20(busd).approve(address(instance), 1000e18);
         instance.tokenPurchaseWithBNB{value: 1 ether}(_infoParams.token);
 
         changePrank(user3);
-        // IERC20(busd).approve(address(instance), 500e18);
-        // instance.tokenPurchaseWithBUSD(_infoParams.token, 500e18);
         instance.tokenPurchaseWithBNB{value: 0.5 ether}(_infoParams.token);
 
         vm.warp(block.timestamp + (3 * _MONTH));
 
         changePrank(user3);
-        // IERC20(busd).approve(address(instance), 500e18);
-        // instance.tokenPurchaseWithBUSD(_infoParams.token, 500e18);
         instance.tokenPurchaseWithBNB{value: 0.5 ether}(_infoParams.token);
 
         changePrank(user4);
-        // IERC20(busd).approve(address(instance), 1000e18);
-        // instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
         instance.tokenPurchaseWithBNB{value: 1 ether}(_infoParams.token);
 
         vm.warp(block.timestamp + (3 * _MONTH));
 
         changePrank(user4);
-        // IERC20(busd).approve(address(instance), 500e18);
-        // instance.tokenPurchaseWithBUSD(_infoParams.token, 500e18);
         instance.tokenPurchaseWithBNB{value: 0.5 ether}(_infoParams.token);
 
         vm.warp(block.timestamp + (2 * _MONTH));
 
         changePrank(user4);
-        // IERC20(busd).approve(address(instance), 1000e18);
-        // instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
         instance.tokenPurchaseWithBNB{value: 1 ether}(_infoParams.token);
 
         (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
@@ -3562,15 +3593,14 @@ contract LaunchpadV2Test is Test {
         instance.claimTokens(address(deXa), 1);
         instance.claimTokens(address(deXa), 2);
 
-        // user2 invested 1000 busd
-        // user3 invested 1000 busd
-        // user4 invested 2500 busd
+        // user2 invested 1 ether
+        // user3 invested 1 ether
+        // user4 invested 2.5 ether
 
         assertEq(deXa.balanceOf(user2), 1000e18, "Not equal");
         assertEq(deXa.balanceOf(user3), 1000e18, "Not equal");
         assertEq(deXa.balanceOf(user4), 2500e18, "Not equal");
 
-        // assertEq(busd.balanceOf(address(instance)), 45 ether, "Not equal");
         assertEq(address(instance).balance, 4.5 ether + 0.001 ether, "Not Equal");
 
         changePrank(user1);
@@ -3589,7 +3619,6 @@ contract LaunchpadV2Test is Test {
         instance.withdrawFundsForFee(address(deXa));
         instance.withdrawCreateFee();
 
-        // assertEq(busd.balanceOf(address(instance)), 0, "Not equal");
         assertEq(address(instance).balance, 0, "Not equal");
         assertEq(owner.balance, 0.045 ether + 0.001 ether, "Not equal");
     }
