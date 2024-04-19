@@ -585,7 +585,9 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
     }
 
     function _hasEnded(address _token) internal view returns (bool) {
-        if (getRound(_token) == -4) {
+        RoundInfo[] storage _roundsInfo = presaleInfo[_token].roundsInfo;
+        uint256 endTimeOfPresale = _roundsInfo[_roundsInfo.length - 1].endTime;
+        if (block.timestamp > endTimeOfPresale) {
             return true;
         } else {
             return false;
