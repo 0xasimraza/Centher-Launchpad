@@ -1918,6 +1918,80 @@ contract LaunchpadV2Test is Test {
         assertEq(busd.balanceOf(user2), 1000e18, "Not equal");
     }
 
+    function testShouldRefundTokensInBusdButAfterPresaleOverWithSingleRound() public {
+        deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+        deal(user1, 5 ether);
+
+        vm.startPrank(user1);
+
+        ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+            owner: user1,
+            token: address(deXa),
+            minTokensToSell: 5000e18,
+            maxTokensToSell: 1000000e18,
+            roundDeep: 1,
+            coinFeeRate: 100,
+            tokenFeeRate: 100,
+            releaseMonth: 10,
+            isRefSupport: false,
+            fundType: ILaunchpadV2.FundType.BUSD,
+            metadata: ""
+        });
+
+        ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](1);
+        _roundsParams[0] = ILaunchpadV2.RoundInfo({
+            startTime: (block.timestamp + 86400),
+            endTime: (block.timestamp + 12 weeks),
+            lockMonths: 3,
+            minContribution: 500e18,
+            maxContribution: 10000000000e18,
+            tokensToSell: 50000e18,
+            pricePerToken: 1e18
+        });
+        // _roundsParams[1] = ILaunchpadV2.RoundInfo({
+        //     startTime: (block.timestamp + 12 weeks),
+        //     endTime: (block.timestamp + 24 weeks),
+        //     lockMonths: 3,
+        //     minContribution: 500e18,
+        //     maxContribution: 10000000000e18,
+        //     tokensToSell: 25000e18,
+        //     pricePerToken: 1e18
+        // });
+        // _roundsParams[2] = ILaunchpadV2.RoundInfo({
+        //     startTime: (block.timestamp + 24 weeks),
+        //     endTime: (block.timestamp + 36 weeks),
+        //     lockMonths: 3,
+        //     minContribution: 500e18,
+        //     maxContribution: 10000000000e18,
+        //     tokensToSell: 10000e18,
+        //     pricePerToken: 1e18
+        // });
+        deXa.approve(address(instance), 1500000e18);
+        instance.createPresale{value: 0.001 ether}(_infoParams, _roundsParams);
+
+        assertEq(instance.createdPresale(_infoParams.token), true, "Not Created");
+
+        vm.warp(block.timestamp + 86400);
+        changePrank(user2);
+
+        IERC20(busd).approve(address(instance), 1000e18);
+        instance.tokenPurchaseWithBUSD(_infoParams.token, 1000e18);
+
+        (, uint256 raisingFundForPresale,,,,) = instance.presaleInfo(address(deXa));
+
+        assertEq(raisingFundForPresale, 1000e18, "Not equal");
+
+        vm.warp(block.timestamp + (3 * _MONTH));
+        bytes4 selector = bytes4(keccak256("CannotClaim()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
+        instance.claimTokens(address(deXa), 0);
+
+        bytes4 selector2 = bytes4(keccak256("PresaleNotOver()"));
+        // vm.expectRevert(abi.encodeWithSelector(selector2));
+        instance.refund(address(deXa));
+    }
+
     function testShouldNotRefundTokensInBusdDuePresaleActive() public {
         deal({token: address(deXa), to: address(user1), give: 50000000e18});
 

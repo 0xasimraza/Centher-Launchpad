@@ -14,7 +14,8 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
     uint256 public collectedFees;
 
     uint256 public constant REFERRAL_DEEP = 6;
-    uint256 private constant _MONTH = 86400 * 30;
+    // uint256 private constant _MONTH = 30 days; //production
+    uint256 private constant _MONTH = 1800; // testnet
     uint256 private constant _PERCENT = 10000;
 
     mapping(address => PresaleInfo) public presaleInfo;
@@ -24,7 +25,7 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
     IERC20 public busd;
     IRegistration public register;
 
-    modifier onlyRegisterUser() {
+    modifier onlyRegisteredUser() {
         if (!(register.isRegistered(msg.sender))) {
             revert UnregisteredUser();
         }
@@ -40,6 +41,7 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
 
     function initialize(address _register, address _busd) public initializer {
         require(!initialized, "Contract instance has already been initialized");
+        initialized = true;
         __Ownable_init();
         __ReentrancyGuard_init();
 
@@ -53,7 +55,7 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
         external
         payable
         override
-        onlyRegisterUser
+        onlyRegisteredUser
     {
         if (createdPresale[_infoParams.token]) {
             revert AlreadyCreated();
@@ -73,12 +75,9 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
         if (_infoParams.roundDeep != _roundsParams.length) {
             revert IncorrectRoundsCount();
         }
-        uint256 _totalTokenToSell;
 
-        uint256 roundLength = _roundsParams.length;
-        for (uint8 i; i < roundLength; i++) {
-            _totalTokenToSell += _roundsParams[i].tokensToSell;
-        }
+        uint256 _totalTokenToSell = sumTokensToSell(_roundsParams);
+
         if (_infoParams.maxTokensToSell < _totalTokenToSell) {
             revert IncorrectAmountToSell();
         }
@@ -87,15 +86,8 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
 
         IERC20(_infoParams.token).transferFrom(msg.sender, address(this), tokenAmount);
 
-        presaleInfo[_infoParams.token].params = _infoParams;
+        _setupPresaleRounds(_infoParams, _roundsParams);
 
-        if (_infoParams.isRefSupport == true) {
-            presaleInfo[_infoParams.token].affiliateSetup = AffiliateStatus.Pending;
-        }
-
-        for (uint256 i; i < roundLength; i++) {
-            presaleInfo[_infoParams.token].roundsInfo.push(_roundsParams[i]);
-        }
         collectedFees += msg.value;
         createdPresale[_infoParams.token] = true;
 
@@ -105,7 +97,7 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
     function updatePresale(PresaleInfoParams memory _infoParams, RoundInfo[] memory _roundsParams)
         external
         override
-        onlyRegisterUser
+        onlyRegisteredUser
     {
         if (!createdPresale[_infoParams.token]) {
             revert NotCreated();
@@ -125,11 +117,8 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
         if (_infoParams.roundDeep != _roundsParams.length) {
             revert IncorrectRoundsCount();
         }
-        uint256 _totalTokenToSell;
-        uint256 roundLength = _roundsParams.length;
-        for (uint8 i; i < roundLength; i++) {
-            _totalTokenToSell += _roundsParams[i].tokensToSell;
-        }
+
+        uint256 _totalTokenToSell = sumTokensToSell(_roundsParams);
         if (_infoParams.maxTokensToSell < _totalTokenToSell) {
             revert IncorrectAmountToSell();
         }
@@ -146,27 +135,16 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
             IERC20(_infoParams.token).transfer(msg.sender, (oldTokenAmount - newTokenAmount));
         }
 
-        info.params = _infoParams;
-
-        if (_infoParams.isRefSupport == true) {
-            presaleInfo[_infoParams.token].affiliateSetup = AffiliateStatus.Pending;
-        }
-
         delete info.roundsInfo;
 
-        for (uint8 i; i < roundLength; i++) {
-            info.roundsInfo[i] = _roundsParams[i];
-        }
+        _setupPresaleRounds(_infoParams, _roundsParams);
 
         emit UpdatePresale(_infoParams.token, _infoParams, _roundsParams);
     }
 
-    function tokenPurchaseWithBNB(address _token) external payable override nonReentrant onlyRegisterUser {
+    function tokenPurchaseWithBNB(address _token) external payable override nonReentrant onlyRegisteredUser {
         int8 _round = getRound(_token);
 
-        if (msg.value < 0) {
-            revert ZeroBNB();
-        }
         if (!(_round == 0 || _round == 1 || _round == 2)) {
             revert IncorrectRoundsCount();
         }
@@ -200,7 +178,11 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
             presaleInfo[_token].contributions[uint8(_round)][msg.sender].purchaseTime = block.timestamp;
         }
 
-        uint256 tokenAmount = _bnbAmount * 1e18 / info.pricePerToken;
+        uint256 tokenAmount;
+
+        unchecked {
+            tokenAmount = _bnbAmount * 1e18 / info.pricePerToken;
+        }
 
         presaleInfo[_token].contributions[uint8(_round)][msg.sender].totalClaimableToken += tokenAmount;
 
@@ -209,10 +191,13 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
             totalRefRewards = _updateRefRewards(_token, _round, _bnbAmount);
         }
 
-        uint256 fundForFees = _bnbAmount - (_bnbAmount * (_PERCENT - presaleInfo[_token].params.coinFeeRate) / _PERCENT);
+        uint256 fundForFees;
+        unchecked {
+            fundForFees = _bnbAmount - (_bnbAmount * (_PERCENT - presaleInfo[_token].params.coinFeeRate) / _PERCENT);
 
-        presaleInfo[_token].fundForCreator += _bnbAmount - (fundForFees + totalRefRewards);
-        presaleInfo[_token].fundForFee += fundForFees;
+            presaleInfo[_token].fundForCreator += _bnbAmount - (fundForFees + totalRefRewards);
+            presaleInfo[_token].fundForFee += fundForFees;
+        }
 
         emit TokenPurchaseWithBNB(_token, msg.sender, uint8(_round), _bnbAmount, presaleInfo[_token].fundForCreator);
     }
@@ -221,7 +206,7 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
         external
         override
         nonReentrant
-        onlyRegisterUser
+        onlyRegisteredUser
     {
         int8 _round = getRound(_token);
         if (!(_round == 0 || _round == 1 || _round == 2)) {
@@ -270,16 +255,17 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
         if (presaleInfo[_token].affiliateSetup == AffiliateStatus.Active) {
             totalRefRewards = _updateRefRewards(_token, _round, _busdAmount);
         }
-        uint256 fundForFees =
-            _busdAmount - (_busdAmount * (_PERCENT - presaleInfo[_token].params.tokenFeeRate) / _PERCENT);
-
-        presaleInfo[_token].fundForCreator += _busdAmount - (fundForFees + totalRefRewards);
-        presaleInfo[_token].fundForFee += fundForFees;
+        uint256 fundForFees;
+        unchecked {
+            fundForFees = _busdAmount - (_busdAmount * (_PERCENT - presaleInfo[_token].params.tokenFeeRate) / _PERCENT);
+            presaleInfo[_token].fundForCreator += _busdAmount - (fundForFees + totalRefRewards);
+            presaleInfo[_token].fundForFee += fundForFees;
+        }
 
         emit TokenPurchaseWithBUSD(_token, msg.sender, uint8(_round), _busdAmount, presaleInfo[_token].fundForCreator);
     }
 
-    function claimTokens(address _token, uint8 _round) external override nonReentrant onlyRegisterUser {
+    function claimTokens(address _token, uint8 _round) external override nonReentrant onlyRegisteredUser {
         if (!(hasSoftCapReached(_token))) {
             revert CannotClaim();
         }
@@ -404,7 +390,7 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
         emit Refund(_token, msg.sender, presaleInfo[_token].params.fundType, amount);
     }
 
-    function claimRefReward(address _token) external override nonReentrant onlyRegisterUser {
+    function claimRefReward(address _token) external override nonReentrant onlyRegisteredUser {
         if (presaleInfo[_token].affiliateSetup != AffiliateStatus.Active) {
             revert NotSupportedForRefReward();
         }
@@ -510,9 +496,14 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
     function getClaimableTokenAmount(address _token, uint8 _round, address _user) public view returns (uint256) {
         RoundInfo storage info = presaleInfo[_token].roundsInfo[_round];
         ContributionInfo memory contribution = presaleInfo[_token].contributions[_round][_user];
-        uint256 passedTime = (block.timestamp - contribution.purchaseTime) / _MONTH;
-        if (passedTime > info.lockMonths) {
-            uint256 months = (block.timestamp - contribution.purchaseTime) / _MONTH - info.lockMonths;
+        uint256 passedTimeInSecs = (block.timestamp - contribution.purchaseTime);
+        if (passedTimeInSecs / _MONTH > info.lockMonths) {
+            uint256 months;
+
+            unchecked {
+                months = passedTimeInSecs / _MONTH - info.lockMonths;
+            }
+
             if (months > presaleInfo[_token].params.releaseMonth) months = presaleInfo[_token].params.releaseMonth;
             uint256 tokenAmount;
 
@@ -591,6 +582,23 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
             return true;
         } else {
             return false;
+        }
+    }
+
+    function sumTokensToSell(RoundInfo[] memory _rounds) internal pure returns (uint256 total) {
+        for (uint256 i; i < _rounds.length; i++) {
+            total += _rounds[i].tokensToSell;
+        }
+    }
+
+    function _setupPresaleRounds(PresaleInfoParams memory _infoParams, RoundInfo[] memory _roundsParams) internal {
+        PresaleInfo storage presale = presaleInfo[_infoParams.token];
+        presale.params = _infoParams;
+        if (_infoParams.isRefSupport) {
+            presale.affiliateSetup = AffiliateStatus.Pending;
+        }
+        for (uint256 i; i < _roundsParams.length; i++) {
+            presale.roundsInfo.push(_roundsParams[i]);
         }
     }
 }
