@@ -2,9 +2,9 @@ const { ethers } = require("hardhat");
 
 const launchpadAbi = require("./utils/Launchpad.json");
 const tokenABI = require("./utils/token.json");
-const { parseEther, parseUnits, MaxInt256 } = require("ethers");
+const { parseUnits, MaxInt256 } = require("ethers");
 
-const launchpad = "0x7Ab704C69618ABbb0bf02E4F00249F86AcF59925"; //testnet
+const launchpad = "0xEB18eC8c89FFd3129c9779e20Ec9d6877b1F7d1d"; //testnet
 
 let provider;
 
@@ -14,56 +14,74 @@ let buyer2 = process.env.PRIVATE_KEY2;
 
 async function main() {
   //   const presaleToken = "0x17251778DF10EAf734B69E2109e9190cB061F809"; // xyz
-  const presaleToken = "0xEF52501F1062dE28106602A7fda41b8A285f8dD9"; //abc
+  // const presaleToken = "0xEF52501F1062dE28106602A7fda41b8A285f8dD9"; //abc
+  const presaleToken = "0x17251778DF10EAf734B69E2109e9190cB061F809"; //pqr
   const usdt = "0x1B855BF0e0eDBF394cB8F74D906d8d93A1C2D6e0";
 
   //   createPresale Args
   const presaleInfoParams = {
     owner: "0xdD15D2650387Fb6FEDE27ae7392C402a393F8A37",
     token: presaleToken,
-    minTokensToSell: parseUnits("50", "ether"), 
-    maxTokensToSell: parseUnits("500000", "ether"), 
+    minTokensToSell: parseUnits("1", "ether"),
+    maxTokensToSell: parseUnits("1000000000", "ether"),
     roundDeep: 3,
     coinFeeRate: 100,
     tokenFeeRate: 100,
     releaseMonth: 10,
-    isRefSupport: false,
-    fundType: 1,  
+    isRefSupport: true,
+    fundType: 1,
+    metadata: "Presale Project 3",
   };
+
+  //according mainnet
+  // const roundOneStart = Math.floor(Date.now() / 1000);
+  // const roundOneEnd = Math.floor(Date.now() / 1000) + 604800;
+  // const roundTwoStart = Math.floor(Date.now() / 1000) + 604800;
+  // const roundTwoEnd = Math.floor(Date.now() / 1000) + 60480 * 2;
+  // const roundThreeStart = Math.floor(Date.now() / 1000) + 60480 * 2;
+  // const roundThreeEnd = Math.floor(Date.now() / 1000) + 60480 * 3;
+
+  // according testnet
+  const roundOneStart = Math.floor(Date.now() / 1000) + 600;
+  const roundOneEnd = Math.floor(Date.now() / 1000) + 28800;
+  const roundTwoStart = Math.floor(Date.now() / 1000) + 28800;
+  const roundTwoEnd = Math.floor(Date.now() / 1000) + 28800 * 2;
+  const roundThreeStart = Math.floor(Date.now() / 1000) + 28800 * 2;
+  const roundThreeEnd = Math.floor(Date.now() / 1000) + 28800 * 3;
 
   const roundsParams = [
     {
-      startTime: Math.floor(Date.now() / 1000),
-      endTime: Math.floor(Date.now() / 1000) + 604800, 
+      startTime: roundOneStart,
+      endTime: roundOneEnd,
       lockMonths: 3,
-      minContribution: parseUnits("5", "ether"), 
-      maxContribution: parseUnits("10000", "ether"), 
-      tokensToSell: parseUnits("100000", "ether"), 
-      pricePerToken: parseUnits("0.8", "ether"), 
+      minContribution: parseUnits("0.000001", "ether"),
+      maxContribution: parseUnits("10000", "ether"),
+      tokensToSell: parseUnits("10000000", "ether"),
+      pricePerToken: 100000000000000, //parseUnits(" 0.0001", "ether"),
     },
     {
-      startTime: Math.floor(Date.now() / 1000) + 604800,
-      endTime: Math.floor(Date.now() / 1000) + 60480 * 2, 
+      startTime: roundTwoStart,
+      endTime: roundTwoEnd,
       lockMonths: 3,
-      minContribution: parseUnits("5", "ether"), 
-      maxContribution: parseUnits("10000", "ether"), 
-      tokensToSell: parseUnits("100000", "ether"), 
-      pricePerToken: parseUnits("1", "ether"), 
+      minContribution: parseUnits("0.000001", "ether"),
+      maxContribution: parseUnits("10000", "ether"),
+      tokensToSell: parseUnits("10000000", "ether"),
+      pricePerToken: 200000000000000, //parseUnits(" 0.0002", "ether"),
     },
     {
-      startTime: Math.floor(Date.now() / 1000) + 60480 * 2,
-      endTime: Math.floor(Date.now() / 1000) + 60480 * 3, 
+      startTime: roundThreeStart,
+      endTime: roundThreeEnd,
       lockMonths: 3,
-      minContribution: parseUnits("5", "ether"), 
-      maxContribution: parseUnits("10000", "ether"), 
-      tokensToSell: parseUnits("100000", "ether"),
-      pricePerToken: parseUnits("1.2", "ether"),
+      minContribution: parseUnits("0.000001", "ether"),
+      maxContribution: parseUnits("10000", "ether"),
+      tokensToSell: parseUnits("10000000", "ether"),
+      pricePerToken: 300000000000000, //parseUnits(" 0.0003", "ether"),
     },
   ];
 
-  //   let args = [presaleInfoParams, roundsParams];
+  let args = [presaleInfoParams, roundsParams];
 
-  //   await createPresale(args, presaleToken);
+  await createPresale(args, presaleToken);
 
   //   await updatePresale(args, presaleToken);
 
@@ -107,6 +125,10 @@ async function createPresale(args, _token) {
     let approvetx = await token.approve(launchpad, MaxInt256);
     await approvetx.wait();
     console.log("approve txhash: ", await approvetx.hash);
+
+    await contract.createPresale.staticCall(args[0], args[1], {
+      value: parseUnits("0.001", "ether"),
+    })
 
     let tx = await contract.createPresale(args[0], args[1], {
       value: parseUnits("0.001", "ether"),

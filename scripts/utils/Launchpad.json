@@ -267,6 +267,11 @@
                         "internalType": "enum ILaunchpadV2.FundType",
                         "name": "fundType",
                         "type": "uint8"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "metadata",
+                        "type": "string"
                     }
                 ],
                 "indexed": false,
@@ -629,6 +634,11 @@
                         "internalType": "enum ILaunchpadV2.FundType",
                         "name": "fundType",
                         "type": "uint8"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "metadata",
+                        "type": "string"
                     }
                 ],
                 "indexed": false,
@@ -986,6 +996,11 @@
                         "internalType": "enum ILaunchpadV2.FundType",
                         "name": "fundType",
                         "type": "uint8"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "metadata",
+                        "type": "string"
                     }
                 ],
                 "internalType": "struct ILaunchpadV2.PresaleInfoParams",
@@ -1392,6 +1407,11 @@
                         "internalType": "enum ILaunchpadV2.FundType",
                         "name": "fundType",
                         "type": "uint8"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "metadata",
+                        "type": "string"
                     }
                 ],
                 "internalType": "struct ILaunchpadV2.PresaleInfoParams",
@@ -1607,6 +1627,11 @@
                         "internalType": "enum ILaunchpadV2.FundType",
                         "name": "fundType",
                         "type": "uint8"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "metadata",
+                        "type": "string"
                     }
                 ],
                 "internalType": "struct ILaunchpadV2.PresaleInfoParams",

@@ -45,8 +45,6 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
         __Ownable_init();
         __ReentrancyGuard_init();
 
-        createFee = 0.001 ether;
-
         busd = IERC20(_busd);
         register = IRegistration(_register);
     }
@@ -60,7 +58,7 @@ contract LaunchpadV2 is ILaunchpadV2, OwnableUpgradeable, ReentrancyGuardUpgrade
         if (createdPresale[_infoParams.token]) {
             revert AlreadyCreated();
         }
-        if (msg.value < createFee) {
+        if (msg.value < createFee && createFee != 0) {
             revert InsufficientFees();
         }
         if (_infoParams.minTokensToSell > _infoParams.maxTokensToSell) {

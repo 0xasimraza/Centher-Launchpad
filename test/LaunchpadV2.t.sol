@@ -48,7 +48,7 @@ contract LaunchpadV2Test is Test {
         console2.log(" ---- other ----", other);
 
         vm.startPrank(owner);
-        deXa = new Token("deXa", "DXC", 50000000e18 );
+        deXa = new Token("deXa", "DXC", 50000000e18);
         busd = new Token("Binance USD", "BUSD", 25000000e18);
         wbnb = new Token("Wrapped BNB", "WBNB", 50000000e18);
         ntr = new Token("NTR Token", "NTR", 25000000e18);
@@ -81,10 +81,7 @@ contract LaunchpadV2Test is Test {
 
         register.registerForOwnerBatch(_users, _refs);
 
-        instance = new LaunchpadV2(
-        address(register),
-        address(busd)
-        );
+        instance = new LaunchpadV2(address(register), address(busd));
         vm.stopPrank();
     }
 
@@ -3685,7 +3682,6 @@ contract LaunchpadV2Test is Test {
         // cut 1% fee
         assertEq(user1.balance, 4.455 ether, "Not Equal");
 
-
         changePrank(owner);
         //flush old funds
         busd.transfer(address(1), busd.balanceOf(owner));
@@ -3696,4 +3692,61 @@ contract LaunchpadV2Test is Test {
         assertEq(address(instance).balance, 0, "Not equal");
         assertEq(owner.balance, 0.045 ether + 0.001 ether, "Not equal");
     }
+
+    // function testNewLaunchpadContract() public {
+    //     vm.startPrank(owner);
+
+    //     LaunchpadV2 _instance = new LaunchpadV2(address(register), address(busd));
+
+    //      deal({token: address(deXa), to: address(user1), give: 50000000e18});
+
+    //     deal(user1, 5 ether);
+
+    //     vm.startPrank(user1);
+
+    //     ILaunchpadV2.PresaleInfoParams memory _infoParams = ILaunchpadV2.PresaleInfoParams({
+    //         owner: user1,
+    //         token: address(deXa),
+    //         minTokensToSell: 500000e18,
+    //         maxTokensToSell: 1000000e18,
+    //         roundDeep: 3,
+    //         coinFeeRate: 100,
+    //         tokenFeeRate: 100,
+    //         releaseMonth: 10,
+    //         isRefSupport: false,
+    //         fundType: ILaunchpadV2.FundType.BUSD,
+    //         metadata: ""
+    //     });
+
+    //     ILaunchpadV2.RoundInfo[] memory _roundsParams = new ILaunchpadV2.RoundInfo[](3);
+    //     _roundsParams[0] = ILaunchpadV2.RoundInfo({
+    //         startTime: (block.timestamp + 86400),
+    //         endTime: (block.timestamp + 12 weeks),
+    //         lockMonths: 3,
+    //         minContribution: 500e18,
+    //         maxContribution: 10000000000e18,
+    //         tokensToSell: 50000e18,
+    //         pricePerToken: 1e18
+    //     });
+    //     _roundsParams[1] = ILaunchpadV2.RoundInfo({
+    //         startTime: (block.timestamp + 12 weeks),
+    //         endTime: (block.timestamp + 24 weeks),
+    //         lockMonths: 3,
+    //         minContribution: 500e18,
+    //         maxContribution: 10000000000e18,
+    //         tokensToSell: 25000e18,
+    //         pricePerToken: 1e18
+    //     });
+    //     _roundsParams[2] = ILaunchpadV2.RoundInfo({
+    //         startTime: (block.timestamp + 24 weeks),
+    //         endTime: (block.timestamp + 36 weeks),
+    //         lockMonths: 3,
+    //         minContribution: 500e18,
+    //         maxContribution: 10000000000e18,
+    //         tokensToSell: 10000e18,
+    //         pricePerToken: 1e18
+    //     });
+    //     deXa.approve(address(_instance), 1500000e18);
+    //     _instance.createPresale(_infoParams, _roundsParams);
+    // }
 }
